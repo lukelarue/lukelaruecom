@@ -1,0 +1,38 @@
+import { useAuthContext } from '@/context/AuthContext';
+
+export const Sidebar = () => {
+  const { session } = useAuthContext();
+
+  return (
+    <div className="flex h-full flex-col">
+      <header className="border-b border-slate-800 px-4 py-4">
+        <h2 className="text-lg font-semibold">Chat</h2>
+        <p className="text-xs text-slate-400">Real-time lobby coming soon</p>
+      </header>
+      <div className="flex-1 overflow-y-auto px-4 py-6">
+        <div className="rounded-lg border border-dashed border-slate-800 bg-slate-900/60 p-4 text-sm text-slate-400">
+          Chat messages will appear here once the realtime backend is implemented.
+        </div>
+      </div>
+      <footer className="border-t border-slate-800 px-4 py-4 text-sm text-slate-300">
+        <div className="flex items-center gap-3">
+          {session?.user.pictureUrl ? (
+            <img
+              src={session.user.pictureUrl}
+              alt={session.user.name}
+              className="h-10 w-10 rounded-full border border-slate-700"
+            />
+          ) : (
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-800 text-base font-semibold uppercase text-slate-200">
+              {session?.user.name?.[0] ?? '?'}
+            </div>
+          )}
+          <div className="leading-tight">
+            <p className="font-medium">{session?.user.name ?? 'Guest'}</p>
+            <p className="text-xs text-slate-400">{session?.user.email ?? 'Not signed in'}</p>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+};
