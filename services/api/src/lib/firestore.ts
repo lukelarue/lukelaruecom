@@ -5,9 +5,19 @@ let firestoreClient: Firestore | null = null;
 
 export const getFirestore = (): Firestore => {
   if (!firestoreClient) {
+    if (config.dev.useFirestoreEmulator && !process.env.FIRESTORE_EMULATOR_HOST) {
+      process.env.FIRESTORE_EMULATOR_HOST = config.dev.firestoreEmulatorHost;
+    }
+
     firestoreClient = new Firestore({
       projectId: config.gcpProjectId,
     });
+
+    if (config.dev.useFirestoreEmulator) {
+      firestoreClient.settings({
+        ignoreUndefinedProperties: true,
+      });
+    }
   }
 
   return firestoreClient;

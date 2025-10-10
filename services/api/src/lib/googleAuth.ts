@@ -11,6 +11,24 @@ export type GoogleProfile = {
 const oauthClient = new OAuth2Client();
 
 export const verifyGoogleIdToken = async (idToken: string): Promise<GoogleProfile> => {
+  if (config.dev.useFakeGoogleAuth) {
+    try {
+      const parsed = JSON.parse(idToken);
+      return {
+        id: parsed.sub ?? parsed.id ?? 'dev-user',
+        email: parsed.email ?? 'dev-user@example.com',
+        name: parsed.name ?? 'Dev User',
+        pictureUrl: parsed.pictureUrl ?? parsed.picture ?? undefined,
+      };
+    } catch (_err) {
+      return {
+        id: 'dev-user',
+        email: 'dev-user@example.com',
+        name: 'Dev User',
+      };
+    }
+  }
+
   const ticket = await oauthClient.verifyIdToken({
     idToken,
     audience: config.googleClientId,

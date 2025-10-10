@@ -127,7 +127,6 @@ export const loginWithGoogle = async (req: Request, res: Response) => {
     setSessionCookie(res, token);
 
     return res.status(200).json({
-      token,
       user: userProfile,
     });
   } catch (err) {
@@ -153,7 +152,6 @@ export const getSession = async (req: Request, res: Response) => {
 
     const userProfile = mapFirestoreDocToUserProfile(userDoc);
     return res.json({
-      token: req.cookies?.[config.session.cookieName],
       user: userProfile,
     });
   } catch (err) {
