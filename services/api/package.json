@@ -4,6 +4,9 @@
   "private": true,
   "type": "module",
   "main": "dist/index.js",
+  "engines": {
+    "node": ">=20 <21"
+  },
   "scripts": {
     "dev": "npm-run-all --parallel dev:emulator dev:api",
     "dev:api": "tsx watch src/index.ts",

@@ -7,6 +7,9 @@
     "apps/web",
     "services/api"
   ],
+  "engines": {
+    "node": ">=20 <21"
+  },
   "scripts": {
     "dev:web": "npm --workspace apps/web run dev",
     "dev:api": "npm --workspace services/api run dev",
