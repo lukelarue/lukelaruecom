@@ -5,7 +5,7 @@ This repository contains a full-stack web platform prototype for a gaming websit
 ## Local Authentication Service Development
 
 - **Prerequisites**
-  - Node.js 20+
+  - Node.js 22+
   - `npm install` inside `services/api`
   - Firebase CLI (`npx firebase --version`) for the Firestore emulator
 
