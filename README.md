@@ -19,7 +19,7 @@ This repository contains a full-stack web platform prototype for a gaming websit
   npm install
   npm run dev
   ```
-  The script launches the Firestore emulator on `localhost:8080` and the API on `http://localhost:4000`.
+  The script launches the Firestore emulator on `localhost:8080`, the emulator UI on `http://localhost:4001`, and the API on `http://localhost:4000`.
 
 - **Sample requests**
   ```bash
