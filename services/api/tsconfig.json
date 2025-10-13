@@ -7,7 +7,7 @@
     "moduleDetection": "force",
     "strict": true,
     "esModuleInterop": true,
-    "types": ["node"],
+    "types": ["node", "vitest"],
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
     "resolveJsonModule": true,

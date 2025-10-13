@@ -39,3 +39,21 @@ This repository contains a full-stack web platform prototype for a gaming websit
 - **Production**
   - Keep Terraform-managed resources and replace the dev flags (`USE_FIRESTORE_EMULATOR`, `USE_FAKE_GOOGLE_AUTH`) with production values.
   - Provide a real `GOOGLE_CLIENT_ID`, `GCP_PROJECT_ID`, and `SESSION_JWT_SECRET` in the hosted environment.
+
+## Authentication Unit Testing Strategy
+
+- **Purpose**
+  - Document the regression coverage for the Google login flow under `services/api`.
+  - Ensure request validation, happy-path authentication, and failure handling behave consistently.
+- **Tooling**
+  - Uses [Vitest](https://vitest.dev/) with TypeScript support. Install deps via `npm install` inside `services/api/` after pulling new changes.
+- **Scope**
+  - `services/api/src/controllers/__tests__/authController.test.ts` targets `loginWithGoogle()`.
+  - Mocks `verifyGoogleIdToken`, Firestore reads/writes, and `jsonwebtoken` signing to isolate controller logic.
+- **Key Assertions**
+  - Invalid payloads return HTTP 400 with validation feedback.
+  - Successful logins upsert the user, set the session cookie, and respond with the user profile snapshot.
+  - Downstream failures (e.g., Google verification errors) surface as HTTP 401 without mutating cookies.
+- **Running the suite**
+  - `npm test --workspace services/api` runs the unit tests once.
+  - `npm run test:watch --workspace services/api` keeps Vitest in watch mode during development.
