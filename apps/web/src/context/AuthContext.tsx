@@ -9,6 +9,7 @@ import {
 } from 'react';
 import { fetchCurrentSession, loginWithGoogleIdToken, signOut as signOutRequest } from '@/services/auth';
 import type { AuthSession } from '@/types';
+import { env } from '@/utils/env';
 
 export type AuthContextValue = {
   session: AuthSession | null;
@@ -25,6 +26,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<AuthSession | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const mockSession: AuthSession = useMemo(
+    () => ({
+      user: {
+        id: 'mock-user',
+        email: 'mock.user@example.com',
+        name: 'Mock User',
+      },
+      token: 'mock-token',
+    }),
+    []
+  );
 
   useEffect(() => {
     if (typeof window === 'undefined') {
@@ -66,6 +79,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     let cancelled = false;
 
     const bootstrap = async () => {
+      if (env.authMock) {
+        return;
+      }
       setLoading(true);
       try {
         const remoteSession = await fetchCurrentSession();
@@ -95,6 +111,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setLoading(true);
     setError(null);
     try {
+      if (env.authMock) {
+        setSession(mockSession);
+        return;
+      }
       const authSession = await loginWithGoogleIdToken(credential);
       setSession(authSession);
     } catch (err) {
@@ -104,13 +124,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [mockSession]);
 
   const signOut = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      await signOutRequest();
+      if (!env.authMock) {
+        await signOutRequest();
+      }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to sign out';
       setError(message);
