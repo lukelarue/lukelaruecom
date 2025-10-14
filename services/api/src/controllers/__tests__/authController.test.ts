@@ -1,5 +1,8 @@
 import type { Request, Response } from 'express';
-import { beforeAll, beforeEach, afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+
+import type { Config } from '../../config';
+import type { GetFirestore } from '../../lib/firestore';
 
 vi.mock('../../lib/googleAuth', () => ({
   verifyGoogleIdToken: vi.fn(),
@@ -33,7 +36,7 @@ const createMockResponse = () => {
 
 describe('loginWithGoogle', () => {
   let loginWithGoogle: (req: Request, res: Response) => Promise<Response | undefined>;
-  let config: typeof import('../../config').config;
+  let config: Config;
 
   beforeAll(async () => {
     process.env.USE_FAKE_GOOGLE_AUTH = 'true';
@@ -77,7 +80,7 @@ describe('loginWithGoogle', () => {
     const res = createMockResponse();
 
     const mockedVerifyGoogleIdToken = vi.mocked(verifyGoogleIdToken);
-    const mockedGetFirestore = vi.mocked(getFirestore);
+    const mockedGetFirestore = vi.mocked(getFirestore as GetFirestore);
     const signMock = jwt.sign as ReturnType<typeof vi.fn>;
 
     mockedVerifyGoogleIdToken.mockResolvedValueOnce({

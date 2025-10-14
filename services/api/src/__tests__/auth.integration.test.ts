@@ -1,8 +1,11 @@
 import type { Firestore } from '@google-cloud/firestore';
 import type { Express } from 'express';
 import request from 'supertest';
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
+import type { CreateApp } from '../app';
+import type { Config } from '../config';
+import type { GetFirestore } from '../lib/firestore';
 import type { UserProfile } from '../types';
 
 const TEST_USER_ID = 'integration-user-123';
@@ -10,9 +13,9 @@ const USERS_COLLECTION = 'users';
 
 let app: Express;
 let firestore: Firestore;
-let config: typeof import('../config').config;
-let getFirestore: typeof import('../lib/firestore').getFirestore;
-let createApp: typeof import('../app').createApp;
+let config: Config;
+let getFirestore: GetFirestore;
+let createApp: CreateApp;
 
 const loginCredential = JSON.stringify({
   sub: TEST_USER_ID,
@@ -67,7 +70,9 @@ describe('auth integration (offline)', () => {
 
     const setCookieHeader = loginResponse.headers['set-cookie'];
     expect(setCookieHeader).toBeDefined();
-    expect(setCookieHeader?.join(';')).toContain(`${config.session.cookieName}=`);
+
+    const cookieValues = Array.isArray(setCookieHeader) ? setCookieHeader : [setCookieHeader];
+    expect(cookieValues.join(';')).toContain(`${config.session.cookieName}=`);
 
     const body = loginResponse.body as { user: UserProfile };
     expect(body.user).toMatchObject({

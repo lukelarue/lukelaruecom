@@ -23,3 +23,5 @@ export const getFirestore = (): Firestore => {
 
   return firestoreClient;
 };
+
+export type GetFirestore = typeof getFirestore;

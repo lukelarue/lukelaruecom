@@ -4,7 +4,7 @@ dotenv.config();
 
 type RequiredEnvKey = 'GOOGLE_CLIENT_ID' | 'GCP_PROJECT_ID';
 
-type Config = {
+export type Config = {
   port: number;
   googleClientId: string;
   gcpProjectId: string;

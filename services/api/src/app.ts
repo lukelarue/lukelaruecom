@@ -1,6 +1,6 @@
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
-import express from 'express';
+import express, { type NextFunction, type Request, type Response } from 'express';
 import helmet from 'helmet';
 import morgan from 'morgan';
 
@@ -22,13 +22,14 @@ export const createApp = () => {
   );
   app.use(morgan(config.isProduction ? 'combined' : 'dev'));
 
-  app.get('/healthz', (_req, res) => {
+  app.get('/healthz', (_req: Request, res: Response) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
   });
 
   app.use('/auth', authRouter);
 
-  app.use((err: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
+    void _next;
     // eslint-disable-next-line no-console
     console.error('Unhandled error in request pipeline', err);
     res.status(500).json({ message: 'Internal server error' });
@@ -36,3 +37,5 @@ export const createApp = () => {
 
   return app;
 };
+
+export type CreateApp = typeof createApp;
