@@ -1,10 +1,7 @@
 name: API Tests
 
 on:
-  pull_request:
-    paths:
-      - 'services/api/**'
-      - '.github/workflows/api-tests.yml'
+  push:
   workflow_dispatch:
 
 jobs:
