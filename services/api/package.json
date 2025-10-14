@@ -15,7 +15,7 @@
     "build": "tsc -p tsconfig.build.json",
     "lint": "eslint src --ext .ts",
     "format": "prettier --write .",
-    "test": "vitest run",
+    "test": "vitest run --exclude src/__tests__/auth.integration.test.ts",
     "test:watch": "vitest",
     "test:integration": "vitest run src/__tests__/auth.integration.test.ts"
   },
