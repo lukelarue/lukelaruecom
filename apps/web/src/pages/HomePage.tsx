@@ -22,7 +22,7 @@ export const HomePage = () => {
       <div className="flex flex-col gap-12">
         <section className="flex flex-col gap-6">
           <div>
-            <h1 className="text-3xl font-semibold text-white">LukaLarue Gaming Lobby</h1>
+            <h1 className="text-3xl font-semibold text-white">LukeLaRue Gaming Lobby</h1>
             <p className="text-sm text-slate-400">
               Sign in with Google to save progress, chat with friends, and compete in upcoming games.
             </p>
