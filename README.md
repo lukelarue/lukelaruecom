@@ -40,6 +40,20 @@ This repository contains a full-stack web platform prototype for a gaming websit
   - Keep Terraform-managed resources and replace the dev flags (`USE_FIRESTORE_EMULATOR`, `USE_FAKE_GOOGLE_AUTH`) with production values.
   - Provide a real `GOOGLE_CLIENT_ID`, `GCP_PROJECT_ID`, and `SESSION_JWT_SECRET` in the hosted environment.
 
+## Authentication Linting
+
+- **Run ESLint once**
+  ```bash
+  npm run lint --workspace services/api
+  ```
+  Executes the same checks as CI using `tsconfig.eslint.json` for type-aware rules.
+
+- **Auto-fix what can be fixed**
+  ```bash
+  npm run lint --workspace services/api -- --fix
+  ```
+  Applies safe fixes locally (CI still runs the non-fix command).
+
 ## Authentication Unit Testing Strategy
 
 - **Purpose**

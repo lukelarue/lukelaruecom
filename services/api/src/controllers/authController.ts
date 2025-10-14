@@ -3,8 +3,8 @@ import jwt from 'jsonwebtoken';
 import { z } from 'zod';
 
 import { config } from '../config';
-import { verifyGoogleIdToken } from '../lib/googleAuth';
 import { getFirestore } from '../lib/firestore';
+import { verifyGoogleIdToken } from '../lib/googleAuth';
 import type { SessionTokenPayload, UserProfile } from '../types';
 
 const googleLoginBodySchema = z.object({

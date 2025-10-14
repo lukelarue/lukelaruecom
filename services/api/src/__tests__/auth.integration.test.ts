@@ -1,7 +1,8 @@
+import type { Firestore } from '@google-cloud/firestore';
 import type { Express } from 'express';
 import request from 'supertest';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Firestore } from '@google-cloud/firestore';
+
 import type { UserProfile } from '../types';
 
 const TEST_USER_ID = 'integration-user-123';

@@ -1,4 +1,5 @@
 import { Router } from 'express';
+
 import { loginWithGoogle, getSession, signOut } from '../controllers/authController';
 
 export const authRouter = Router();

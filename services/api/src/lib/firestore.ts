@@ -1,4 +1,5 @@
 import { Firestore } from '@google-cloud/firestore';
+
 import { config } from '../config';
 
 let firestoreClient: Firestore | null = null;
