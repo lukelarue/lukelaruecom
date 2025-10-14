@@ -57,3 +57,23 @@ This repository contains a full-stack web platform prototype for a gaming websit
 - **Running the suite**
   - `npm test --workspace services/api` runs the unit tests once.
   - `npm run test:watch --workspace services/api` keeps Vitest in watch mode during development.
+
+## Authentication Offline Integration Strategy
+
+- **Purpose**
+  - Validate end-to-end behavior of the login flow against the Firestore emulator with fake Google auth.
+  - Exercise request routing, persistence, and cookie/session handling in combination.
+- **Tooling**
+  - Relies on the Firebase Firestore emulator (`firebase-tools`) and Vitest + Supertest for HTTP assertions.
+- **Environment**
+  - Ensure `.env` in `services/api/` has `USE_FIRESTORE_EMULATOR=1` and `USE_FAKE_GOOGLE_AUTH=1` (already present in `.env.example.api`).
+  - Start the Firestore emulator once via `npm run dev:emulator --workspace services/api` (keeps the emulator running without launching the API server).
+- **Test location**
+  - `services/api/src/__tests__/auth.integration.test.ts` covers the happy-path login and repeated login timestamp updates.
+  - The suite seeds credentials by passing JSON payloads accepted by the fake Google auth flag.
+- **Execution**
+  - Run `npm run test:integration --workspace services/api` after the emulator is listening.
+  - Optionally, run `npm run dev:emulator --workspace services/api` in one terminal and `npm run test:integration --workspace services/api` in another for iterative development.
+- **Assertions**
+  - Confirms session cookies are issued and reused between `/auth/google` and `/auth/session` requests.
+  - Verifies user documents are created and updated inside the emulator with consistent timestamps.
