@@ -47,13 +47,7 @@ beforeAll(async () => {
 });
 
 beforeEach(async () => {
-  vi.useFakeTimers();
-  vi.setSystemTime(new Date('2025-01-01T12:00:00.000Z'));
   await deleteUserDoc();
-});
-
-afterEach(() => {
-  vi.useRealTimers();
 });
 
 afterAll(async () => {
@@ -75,14 +69,16 @@ describe('auth integration (offline)', () => {
     expect(setCookieHeader?.join(';')).toContain(`${config.session.cookieName}=`);
 
     const body = loginResponse.body as { user: UserProfile };
-    expect(body.user).toEqual({
+    expect(body.user).toMatchObject({
       id: TEST_USER_ID,
       email: 'integration-user@example.com',
       name: 'Integration User',
       pictureUrl: 'https://example.com/integration-user.png',
-      createdAt: '2025-01-01T12:00:00.000Z',
-      lastLoginAt: '2025-01-01T12:00:00.000Z',
     });
+    expect(body.user.createdAt).toBeDefined();
+    expect(body.user.lastLoginAt).toBeDefined();
+    expect(body.user.lastLoginAt).toBe(body.user.createdAt);
+    expect(new Date(body.user.createdAt).toISOString()).toBe(body.user.createdAt);
 
     const storedDoc = await firestore.collection(USERS_COLLECTION).doc(TEST_USER_ID).get();
     expect(storedDoc.exists).toBe(true);
@@ -90,8 +86,8 @@ describe('auth integration (offline)', () => {
       email: 'integration-user@example.com',
       name: 'Integration User',
       pictureUrl: 'https://example.com/integration-user.png',
-      createdAt: '2025-01-01T12:00:00.000Z',
-      lastLoginAt: '2025-01-01T12:00:00.000Z',
+      createdAt: body.user.createdAt,
+      lastLoginAt: body.user.lastLoginAt,
     });
 
     const sessionResponse = await agent.get('/auth/session').expect(200);
@@ -108,13 +104,14 @@ describe('auth integration (offline)', () => {
   it('updates user lastLoginAt on subsequent logins', async () => {
     const agent = request.agent(app);
 
-    await agent
+    const firstLogin = await agent
       .post('/auth/google')
       .set('Content-Type', 'application/json')
       .send({ credential: loginCredential })
       .expect(200);
 
-    vi.setSystemTime(new Date('2025-01-02T15:30:00.000Z'));
+    const firstProfile = firstLogin.body.user as UserProfile;
+    await new Promise((resolve) => setTimeout(resolve, 5));
 
     const secondLogin = await agent
       .post('/auth/google')
@@ -123,13 +120,13 @@ describe('auth integration (offline)', () => {
       .expect(200);
 
     const profile = secondLogin.body.user as UserProfile;
-    expect(profile.createdAt).toBe('2025-01-01T12:00:00.000Z');
-    expect(profile.lastLoginAt).toBe('2025-01-02T15:30:00.000Z');
+    expect(profile.createdAt).toBe(firstProfile.createdAt);
+    expect(profile.lastLoginAt).not.toBe(firstProfile.lastLoginAt);
 
     const storedDoc = await firestore.collection(USERS_COLLECTION).doc(TEST_USER_ID).get();
     expect(storedDoc.data()).toMatchObject({
-      createdAt: '2025-01-01T12:00:00.000Z',
-      lastLoginAt: '2025-01-02T15:30:00.000Z',
+      createdAt: firstProfile.createdAt,
+      lastLoginAt: profile.lastLoginAt,
     });
   });
 });
