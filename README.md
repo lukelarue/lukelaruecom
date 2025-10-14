@@ -40,6 +40,49 @@ This repository contains a full-stack web platform prototype for a gaming websit
   - Keep Terraform-managed resources and replace the dev flags (`USE_FIRESTORE_EMULATOR`, `USE_FAKE_GOOGLE_AUTH`) with production values.
   - Provide a real `GOOGLE_CLIENT_ID`, `GCP_PROJECT_ID`, and `SESSION_JWT_SECRET` in the hosted environment.
 
+## Local Frontend (Web App) Development
+
+- **Prerequisites**
+  - Node.js 22+
+  - `npm install` inside the repository root (installs all workspace dependencies)
+
+- **Environment**
+  - Copy `apps/web/.env.example` to `apps/web/.env`.
+  - For the fake auth flow, set `VITE_GOOGLE_CLIENT_ID=fake-google-client-id` (matches the API default).
+
+- **Running the web app**
+  ```bash
+  npm run dev --workspace apps/web
+  ```
+  - Vite serves the UI at [http://localhost:5173](http://localhost:5173).
+  - The dev server proxies `/api` requests to `http://localhost:4000`, so keep the API running for login features.
+
+- **Available routes**
+  - `/` – Marketing-style landing page with Google Sign-In widget.
+  - `/lobby` – Protected lobby shell (requires session).
+  - `/profile` – Profile preview sourced from the authenticated session.
+
+## Full-Stack Development Loop
+
+- **Install once**
+  ```bash
+  npm install
+  ```
+
+- **Terminal 1 – API + emulator**
+  ```bash
+  npm run dev --workspace services/api
+  ```
+
+- **Terminal 2 – Frontend**
+  ```bash
+  npm run dev --workspace apps/web
+  ```
+
+- **Access**
+  - API available at `http://localhost:4000` (Firestore emulator on `localhost:8080`).
+  - UI available at `http://localhost:5173` with live reload and API proxying in place.
+
 ## Authentication Linting
 
 - **Run ESLint once**
