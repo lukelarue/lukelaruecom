@@ -1,9 +1,19 @@
+import { useEffect } from 'react';
 import { GoogleLogin } from '@react-oauth/google';
+import { useNavigate } from 'react-router-dom';
 import { MainLayout } from '@/components/Layout/MainLayout';
+import { LoadingScreen } from '@/components/LoadingScreen';
 import { useAuthContext } from '@/context/AuthContext';
 
 export const HomePage = () => {
+  const navigate = useNavigate();
   const { session, loading, error, loginWithCredential, signOut } = useAuthContext();
+
+  useEffect(() => {
+    if (session) {
+      navigate('/lobby', { replace: true });
+    }
+  }, [session, navigate]);
 
   const firstName = session?.user.name?.split(' ')[0] ?? 'Player';
 
@@ -36,13 +46,12 @@ export const HomePage = () => {
                     console.error('Google Sign-In failed');
                   }}
                 />
-                {loading ? (
-                  <p className="text-xs text-slate-400">Authenticating...</p>
-                ) : (
+                {loading ? <LoadingScreen message="Authenticating" className="h-24 rounded-xl" /> : null}
+                {!loading ? (
                   <p className="text-xs text-slate-500">
                     Your Google profile will be stored securely in Firestore upon sign-in.
                   </p>
-                )}
+                ) : null}
                 {error ? <p className="text-sm text-rose-400">{error}</p> : null}
               </div>
             </div>
@@ -62,6 +71,15 @@ export const HomePage = () => {
                     className="rounded-full bg-slate-800 px-4 py-2 text-sm font-medium text-slate-200 transition hover:bg-slate-700"
                   >
                     Sign out
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      navigate('/lobby');
+                    }}
+                    className="rounded-full border border-brand px-4 py-2 text-sm font-medium text-brand transition hover:bg-brand hover:text-slate-950"
+                  >
+                    Enter lobby
                   </button>
                   <div className="text-xs text-slate-500">
                     Signed in as
