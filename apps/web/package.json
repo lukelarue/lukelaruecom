@@ -4,7 +4,6 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite",
     "dev:mock": "vite --mode frontend-mock",
     "dev:backend": "vite --mode backend",
     "build": "tsc && vite build",

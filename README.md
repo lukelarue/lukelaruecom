@@ -62,22 +62,19 @@ This repository contains a full-stack web platform prototype for a gaming websit
 
 - **Running the web app**
   ```bash
-  npm run dev --workspace apps/web
+  npm run dev:web:mock
   ```
-  - Vite serves the UI at [http://localhost:5173](http://localhost:5173).
-  - The dev server proxies `/api` requests to `http://localhost:4000`, so keep the API running for login features.
+  - Starts Vite in `frontend-mock` mode so the UI manages sessions locally without the API.
 
-- **Convenience commands**
-  - **UI only (mocked backend)**
-    ```bash
-    npm run dev:web:mock
-    ```
-    Runs Vite with `frontend-mock` mode so the UI manages sessions locally.
-  - **UI with backend + emulator**
-    ```bash
-    npm run dev:web:backend
-    ```
-    Runs Vite with `backend` mode so login hits the API while Google login stays mocked.
+  ```bash
+  npm run dev:web:backend
+  ```
+  - Starts Vite in `backend` mode so auth requests hit `services/api` (proxy at `http://localhost:4000`).
+  - Ensure the API is running in another terminal (`npm run dev --workspace services/api`).
+
+- **Environment notes**
+  - `.env` should avoid hard-coding `VITE_AUTH_MODE`; rely on the command you run instead.
+  - Modes still respect overrides in `.env.backend` or `.env.frontend-mock` if you need customization.
 
 - **Available routes**
   - `/` – Marketing-style landing page with Google Sign-In widget.

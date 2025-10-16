@@ -2,6 +2,14 @@ const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? '/api';
 const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID ?? '';
 
 const resolveAuthMode = (): 'frontend-mock' | 'backend' => {
+  const modeHint = import.meta.env.MODE;
+  if (modeHint === 'backend') {
+    return 'backend';
+  }
+  if (modeHint === 'frontend-mock') {
+    return 'frontend-mock';
+  }
+
   const explicitMode = import.meta.env.VITE_AUTH_MODE;
   if (explicitMode === 'backend') {
     return 'backend';
