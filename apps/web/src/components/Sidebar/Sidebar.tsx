@@ -13,7 +13,7 @@ export const Sidebar = () => {
       </header>
       <div className="flex-1 overflow-y-auto px-4 py-6">
         <nav className="flex flex-col gap-2">
-          <SidebarLink to="/" label="Home" />
+          {!session ? <SidebarLink to="/" label="Home" /> : null}
           <SidebarLink to="/lobby" label="Lobby" disabled={!session} />
           <SidebarLink to="/profile" label="Profile" disabled={!session} />
           <SidebarLink to="/chat" label="Chat" disabled />
