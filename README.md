@@ -2,171 +2,125 @@
 
 This repository contains a full-stack web platform prototype for a gaming website. It includes a React frontend, Node.js backend, and Terraform infrastructure for deploying on Google Cloud Platform. Future iterations will add multi-game experiences and real-time features.
 
-## Local Authentication Service Development
+## Installation & Environment Setup
 
 - **Prerequisites**
   - Node.js 22+
-  - `npm install` inside `services/api`
   - Firebase CLI (`npx firebase --version`) for the Firestore emulator
 
-- **Environment**
-  - Copy `.env.example.api` to `.env` under `services/api/` and tweak as needed.
-  - The example config enables the Firestore emulator and fake Google auth so the service runs fully offline.
-
-- **Running the stack**
+- **Install dependencies**
   ```bash
-  cd services/api
   npm install
-  npm run dev
-  ```
-  The script launches the Firestore emulator on `localhost:8080`, the emulator UI on `http://localhost:4001`, and the API on `http://localhost:4000`.
-
-- **Sample requests**
-  ```bash
-  # Login with fabricated Google credentials (JSON payload is optional)
-  curl -i -X POST http://localhost:4000/auth/google \
-    -H "Content-Type: application/json" \
-    -d '{"credential":"{\"email\":\"dev-user@example.com\",\"name\":\"Dev User\"}"}' \
-    -c cookies.txt
-
-  # Fetch current session using the HTTP-only cookie
-  curl -i http://localhost:4000/auth/session -b cookies.txt
-
-  # Sign out
-  curl -i -X POST http://localhost:4000/auth/signout -b cookies.txt
+  npm install --workspace services/api
   ```
 
-- **Production**
-  - Keep Terraform-managed resources and replace the dev flags (`USE_FIRESTORE_EMULATOR`, `USE_FAKE_GOOGLE_AUTH`) with production values.
-  - Provide a real `GOOGLE_CLIENT_ID`, `GCP_PROJECT_ID`, and `SESSION_JWT_SECRET` in the hosted environment.
+- **Configure backend (`services/api/`)**
+  - Copy `.env.example.api` to `.env` and adjust as needed.
+  - The example config keeps the Firestore emulator and fake Google auth enabled for offline development.
 
-## Local Frontend (Web App) Development
+- **Configure frontend (`apps/web/`)**
+  - Copy `.env.example` to `.env`.
+  - `VITE_AUTH_MODE` switches between mock (`frontend-mock`) and API-backed (`backend`) auth flows.
+  - `VITE_GOOGLE_LOGIN_MOCK` retains an offline Google Sign-In experience even when talking to the API.
+  - For the fake auth flow, set `VITE_GOOGLE_CLIENT_ID=fake-google-client-id` to match the backend default.
 
-- **Prerequisites**
-  - Node.js 22+
-  - `npm install` inside the repository root (installs all workspace dependencies)
+## Running Locally
 
-- **Environment**
-  - Copy `apps/web/.env.example` to `apps/web/.env`.
-  - `VITE_AUTH_MODE` controls whether the UI mocks the backend (`frontend-mock`) or talks to the API (`backend`).
-  - `VITE_GOOGLE_LOGIN_MOCK` keeps the Google Sign-In flow offline while still exercising the backend.
-  - For the fake auth flow, set `VITE_GOOGLE_CLIENT_ID=fake-google-client-id` (matches the API default).
+### Frontend only (mocked backend)
 
-- **Auth modes**
-  - **`frontend-mock`**
-    - Backend-agnostic: mock sessions are stored locally.
-    - Use when running the UI alone.
-  - **`backend`**
-    - Sends login requests to `services/api` (expecting the Firestore emulator and fake Google auth to be running).
-    - `VITE_GOOGLE_LOGIN_MOCK=true` sends the fabricated credential from `VITE_FAKE_GOOGLE_CREDENTIAL` to the API.
-
-- **Running the web app**
+- Use when you want to iterate on the UI without the API.
+- Sessions are stored locally; Google login stays mocked via `VITE_GOOGLE_LOGIN_MOCK`.
+- Commands
   ```bash
   npm run dev:web:mock
   ```
-  - Starts Vite in `frontend-mock` mode so the UI manages sessions locally without the API.
+  - Launches Vite in `frontend-mock` mode with no API dependency.
+
+### Full stack with mocked Google auth
+
+- Run when you need the frontend and backend together while staying offline.
+- The backend launches the Firestore emulator (`localhost:8080`), emulator UI (`http://localhost:4001`), and API (`http://localhost:4000`).
+- Commands
+  ```bash
+  npm run dev --workspace services/api
+  ```
+  - Starts the API with the emulator and fake Google auth flags enabled.
 
   ```bash
   npm run dev:web:backend
   ```
-  - Starts Vite in `backend` mode so auth requests hit `services/api` (proxy at `http://localhost:4000`).
-  - Ensure the API is running in another terminal (`npm run dev --workspace services/api`).
+  - Starts the frontend in `backend` mode so requests hit the API proxy at `http://localhost:4000`.
 
-- **Environment notes**
-  - `.env` should avoid hard-coding `VITE_AUTH_MODE`; rely on the command you run instead.
-  - Modes still respect overrides in `.env.backend` or `.env.frontend-mock` if you need customization.
+- Keep the API and frontend in separate terminals. The UI is served at `http://localhost:5173`.
 
-- **Available routes**
-  - `/` – Marketing-style landing page with Google Sign-In widget.
-  - `/lobby` – Protected lobby shell (requires session).
-  - `/profile` – Profile preview sourced from the authenticated session.
+### Sample API requests (while the backend is running)
 
-### Frontend Unit Tests
+```bash
+# Login with fabricated Google credentials (JSON payload is optional)
+curl -i -X POST http://localhost:4000/auth/google \
+  -H "Content-Type: application/json" \
+  -d '{"credential":"{\"email\":\"dev-user@example.com\",\"name\":\"Dev User\"}"}' \
+  -c cookies.txt
 
-- **Install deps**
-  ```bash
-  npm install
-  ```
-- **Run once**
+# Fetch current session using the HTTP-only cookie
+curl -i http://localhost:4000/auth/session -b cookies.txt
+
+# Sign out
+curl -i -X POST http://localhost:4000/auth/signout -b cookies.txt
+```
+
+### Environment tips
+
+- Avoid hard-coding `VITE_AUTH_MODE` in `apps/web/.env`; use the appropriate `npm run dev:web:*` command instead.
+- `.env.frontend-mock` and `.env.backend` offer per-mode overrides when needed.
+- For API-only debugging, run `npm run dev:emulator --workspace services/api` to keep the Firestore emulator up without the server.
+
+## Application Routes
+
+- `/` – Marketing-style landing page with Google Sign-In widget.
+- `/lobby` – Protected lobby shell (requires session).
+- `/profile` – Profile preview sourced from the authenticated session.
+
+## Testing & Quality
+
+### Unit tests
+
+- **Frontend (`apps/web/`)**
   ```bash
   npm run test --workspace apps/web -- --run --reporter=dot
-  ```
-  Executes Vitest with a dot reporter against the mock-backend setup.
-- **Watch mode**
-  ```bash
   npm run test --workspace apps/web
   ```
-  Launches Vitest in watch mode. Press `q` to exit.
+  - The first command runs Vitest once; the second starts watch mode (press `q` to exit).
 
-## Full-Stack Development Loop
-
-- **Install once**
+- **Backend (`services/api/`)**
   ```bash
-  npm install
+  npm test --workspace services/api
+  npm run test:watch --workspace services/api
   ```
+  - Covers `loginWithGoogle()` and related auth controller behavior with mocked dependencies.
 
-- **Terminal 1 – API + emulator**
+### Integration tests (backend)
+
+- Ensure `USE_FIRESTORE_EMULATOR=1` and `USE_FAKE_GOOGLE_AUTH=1` in `services/api/.env`.
+- Start the Firestore emulator if it is not already running:
   ```bash
-  npm run dev --workspace services/api
+  npm run dev:emulator --workspace services/api
   ```
-
-- **Terminal 2 – Frontend**
+- Execute the suite:
   ```bash
-  npm run dev --workspace apps/web
+  npm run test:integration --workspace services/api
   ```
+- Tests live in `services/api/src/__tests__/auth.integration.test.ts` and validate end-to-end login, cookie issuance, and Firestore persistence.
 
-- **Access**
-  - API available at `http://localhost:4000` (Firestore emulator on `localhost:8080`).
-  - UI available at `http://localhost:5173` with live reload and API proxying in place.
+### Linting
 
-## Authentication Linting
+```bash
+npm run lint --workspace services/api
+npm run lint --workspace services/api -- --fix
+```
+- Runs ESLint with type-aware rules; the `--fix` variant applies safe fixes locally.
 
-- **Run ESLint once**
-  ```bash
-  npm run lint --workspace services/api
-  ```
-  Executes the same checks as CI using `tsconfig.eslint.json` for type-aware rules.
+### Continuous integration
 
-- **Auto-fix what can be fixed**
-  ```bash
-  npm run lint --workspace services/api -- --fix
-  ```
-  Applies safe fixes locally (CI still runs the non-fix command).
-
-## Authentication Unit Testing Strategy
-
-- **Purpose**
-  - Document the regression coverage for the Google login flow under `services/api`.
-  - Ensure request validation, happy-path authentication, and failure handling behave consistently.
-- **Tooling**
-  - Uses [Vitest](https://vitest.dev/) with TypeScript support. Install deps via `npm install` inside `services/api/` after pulling new changes.
-- **Scope**
-  - `services/api/src/controllers/__tests__/authController.test.ts` targets `loginWithGoogle()`.
-  - Mocks `verifyGoogleIdToken`, Firestore reads/writes, and `jsonwebtoken` signing to isolate controller logic.
-- **Key Assertions**
-  - Invalid payloads return HTTP 400 with validation feedback.
-  - Successful logins upsert the user, set the session cookie, and respond with the user profile snapshot.
-  - Downstream failures (e.g., Google verification errors) surface as HTTP 401 without mutating cookies.
-- **Running the suite**
-  - `npm test --workspace services/api` runs the unit tests once.
-  - `npm run test:watch --workspace services/api` keeps Vitest in watch mode during development.
-
-## Authentication Offline Integration Strategy
-
-- **Purpose**
-  - Validate end-to-end behavior of the login flow against the Firestore emulator with fake Google auth.
-  - Exercise request routing, persistence, and cookie/session handling in combination.
-- **Tooling**
-  - Relies on the Firebase Firestore emulator (`firebase-tools`) and Vitest + Supertest for HTTP assertions.
-- **Environment**
-  - Ensure `.env` in `services/api/` has `USE_FIRESTORE_EMULATOR=1` and `USE_FAKE_GOOGLE_AUTH=1` (already present in `.env.example.api`).
-  - Start the Firestore emulator once via `npm run dev:emulator --workspace services/api` (keeps the emulator running without launching the API server).
-- **Test location**
-  - `services/api/src/__tests__/auth.integration.test.ts` covers the happy-path login and repeated login timestamp updates.
-  - The suite seeds credentials by passing JSON payloads accepted by the fake Google auth flag.
-- **Execution**
-  - Run `npm run test:integration --workspace services/api` after the emulator is listening.
-  - Optionally, run `npm run dev:emulator --workspace services/api` in one terminal and `npm run test:integration --workspace services/api` in another for iterative development.
-- **Assertions**
-  - Confirms session cookies are issued and reused between `/auth/google` and `/auth/session` requests.
-  - Verifies user documents are created and updated inside the emulator with consistent timestamps.
+- CI runs linting, unit tests, and integration tests using the commands above.
+- Match the local commands before pushing to ensure parity with the pipeline.
