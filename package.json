@@ -5,7 +5,7 @@
   "description": "Full-stack gaming platform prototype with React frontend, Node.js backend, and GCP infrastructure",
   "workspaces": [
     "apps/web",
-    "services/api"
+    "services/login-api"
   ],
   "engines": {
     "node": ">=22 <23"
@@ -14,7 +14,7 @@
     "dev:web": "npm --workspace apps/web run dev",
     "dev:web:mock": "npm --workspace apps/web run dev:mock",
     "dev:web:backend": "npm --workspace apps/web run dev:backend",
-    "dev:api": "npm --workspace services/api run dev",
+    "dev:login-api": "npm --workspace services/login-api run dev",
     "build": "npm run build --workspaces",
     "lint": "npm run lint --workspaces",
     "format": "npm run format --workspaces",

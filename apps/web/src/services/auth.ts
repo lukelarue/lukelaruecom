@@ -3,7 +3,7 @@ import { env } from '@/utils/env';
 import type { AuthSession } from '@/types';
 
 const client = axios.create({
-  baseURL: env.apiBaseUrl,
+  baseURL: env.loginApiBaseUrl,
   withCredentials: true,
 });
 

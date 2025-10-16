@@ -1,5 +1,5 @@
 {
-  "name": "@lukelarue/api",
+  "name": "@lukelarue/login-api",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -8,8 +8,8 @@
     "node": ">=22 <23"
   },
   "scripts": {
-    "dev": "npm-run-all --parallel dev:emulator dev:api",
-    "dev:api": "tsx watch src/index.ts",
+    "dev": "npm-run-all --parallel dev:emulator dev:login-api",
+    "dev:login-api": "tsx watch src/index.ts",
     "dev:emulator": "firebase emulators:start --only firestore --project demo-firestore",
     "start": "node dist/index.js",
     "build": "tsc -p tsconfig.build.json",

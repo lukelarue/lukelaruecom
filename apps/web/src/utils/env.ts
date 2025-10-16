@@ -1,4 +1,4 @@
-const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? '/api';
+const loginApiBaseUrl = import.meta.env.VITE_LOGIN_API_BASE_URL ?? '/login-api';
 const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID ?? '';
 
 const resolveAuthMode = (): 'frontend-mock' | 'backend' => {
@@ -39,7 +39,7 @@ const fakeGoogleCredential =
   import.meta.env.VITE_FAKE_GOOGLE_CREDENTIAL ?? '{"email":"dev-user@example.com","name":"Dev User"}';
 
 export const env = {
-  apiBaseUrl,
+  loginApiBaseUrl,
   googleClientId,
   authMode,
   authMock,
