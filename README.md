@@ -81,6 +81,23 @@ This repository contains a full-stack web platform prototype for a gaming websit
   - `/lobby` – Protected lobby shell (requires session).
   - `/profile` – Profile preview sourced from the authenticated session.
 
+### Frontend Unit Tests
+
+- **Install deps**
+  ```bash
+  npm install
+  ```
+- **Run once**
+  ```bash
+  npm run test --workspace apps/web -- --run --reporter=dot
+  ```
+  Executes Vitest with a dot reporter against the mock-backend setup.
+- **Watch mode**
+  ```bash
+  npm run test --workspace apps/web
+  ```
+  Launches Vitest in watch mode. Press `q` to exit.
+
 ## Full-Stack Development Loop
 
 - **Install once**
