@@ -48,7 +48,17 @@ This repository contains a full-stack web platform prototype for a gaming websit
 
 - **Environment**
   - Copy `apps/web/.env.example` to `apps/web/.env`.
+  - `VITE_AUTH_MODE` controls whether the UI mocks the backend (`frontend-mock`) or talks to the API (`backend`).
+  - `VITE_GOOGLE_LOGIN_MOCK` keeps the Google Sign-In flow offline while still exercising the backend.
   - For the fake auth flow, set `VITE_GOOGLE_CLIENT_ID=fake-google-client-id` (matches the API default).
+
+- **Auth modes**
+  - **`frontend-mock`**
+    - Backend-agnostic: mock sessions are stored locally.
+    - Use when running the UI alone.
+  - **`backend`**
+    - Sends login requests to `services/api` (expecting the Firestore emulator and fake Google auth to be running).
+    - `VITE_GOOGLE_LOGIN_MOCK=true` sends the fabricated credential from `VITE_FAKE_GOOGLE_CREDENTIAL` to the API.
 
 - **Running the web app**
   ```bash

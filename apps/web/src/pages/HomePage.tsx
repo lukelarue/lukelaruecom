@@ -45,6 +45,16 @@ export const HomePage = () => {
                   >
                     Sign in (mock)
                   </button>
+                ) : env.googleLoginMock ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      void loginWithCredential(env.fakeGoogleCredential);
+                    }}
+                    className="flex items-center justify-center rounded-md bg-brand px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-brand/90"
+                  >
+                    Sign in (emulator)
+                  </button>
                 ) : (
                   <GoogleLogin
                     onSuccess={(response) => {

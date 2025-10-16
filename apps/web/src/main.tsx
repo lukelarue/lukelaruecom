@@ -6,23 +6,25 @@ import App from './App';
 import './index.css';
 import { env } from '@/utils/env';
 
-if (!env.googleClientId && !env.authMock) {
+if (!env.googleClientId && !env.authMock && !env.googleLoginMock) {
   // eslint-disable-next-line no-console
   console.warn('VITE_GOOGLE_CLIENT_ID is not set. Google Sign-In will not work.');
 }
 
+const shouldWrapWithGoogleProvider = !env.authMock && !env.googleLoginMock;
+
 const app = (
   <React.StrictMode>
-    {env.authMock ? (
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
-    ) : (
+    {shouldWrapWithGoogleProvider ? (
       <GoogleOAuthProvider clientId={env.googleClientId}>
         <BrowserRouter>
           <App />
         </BrowserRouter>
       </GoogleOAuthProvider>
+    ) : (
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
     )}
   </React.StrictMode>
 );
