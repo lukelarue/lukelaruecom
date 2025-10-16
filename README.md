@@ -67,6 +67,18 @@ This repository contains a full-stack web platform prototype for a gaming websit
   - Vite serves the UI at [http://localhost:5173](http://localhost:5173).
   - The dev server proxies `/api` requests to `http://localhost:4000`, so keep the API running for login features.
 
+- **Convenience commands**
+  - **UI only (mocked backend)**
+    ```bash
+    npm run dev:web:mock
+    ```
+    Runs Vite with `frontend-mock` mode so the UI manages sessions locally.
+  - **UI with backend + emulator**
+    ```bash
+    npm run dev:web:backend
+    ```
+    Runs Vite with `backend` mode so login hits the API while Google login stays mocked.
+
 - **Available routes**
   - `/` – Marketing-style landing page with Google Sign-In widget.
   - `/lobby` – Protected lobby shell (requires session).
