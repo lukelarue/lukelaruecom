@@ -3,7 +3,7 @@ import { clsx } from 'clsx';
 import { useAuthContext } from '@/context/AuthContext';
 
 export const Sidebar = () => {
-  const { session } = useAuthContext();
+  const { session, signOut, loading } = useAuthContext();
 
   return (
     <div className="flex h-full flex-col">
@@ -23,22 +23,36 @@ export const Sidebar = () => {
         </div>
       </div>
       <footer className="border-t border-slate-800 px-4 py-4 text-sm text-slate-300">
-        <div className="flex items-center gap-3">
-          {session?.user.pictureUrl ? (
-            <img
-              src={session.user.pictureUrl}
-              alt={session.user.name}
-              className="h-10 w-10 rounded-full border border-slate-700"
-            />
-          ) : (
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-800 text-base font-semibold uppercase text-slate-200">
-              {session?.user.name?.[0] ?? '?'}
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            {session?.user.pictureUrl ? (
+              <img
+                src={session.user.pictureUrl}
+                alt={session.user.name}
+                className="h-10 w-10 rounded-full border border-slate-700"
+              />
+            ) : (
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-800 text-base font-semibold uppercase text-slate-200">
+                {session?.user.name?.[0] ?? '?'}
+              </div>
+            )}
+            <div className="leading-tight">
+              <p className="font-medium">{session?.user.name ?? 'Guest'}</p>
+              <p className="text-xs text-slate-400">{session?.user.email ?? 'Not signed in'}</p>
             </div>
-          )}
-          <div className="leading-tight">
-            <p className="font-medium">{session?.user.name ?? 'Guest'}</p>
-            <p className="text-xs text-slate-400">{session?.user.email ?? 'Not signed in'}</p>
           </div>
+          {session ? (
+            <button
+              type="button"
+              onClick={() => {
+                void signOut();
+              }}
+              disabled={loading}
+              className="rounded-full bg-slate-800 px-3 py-1 text-xs font-medium text-slate-200 transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {loading ? 'Signing out…' : 'Sign out'}
+            </button>
+          ) : null}
         </div>
       </footer>
     </div>
