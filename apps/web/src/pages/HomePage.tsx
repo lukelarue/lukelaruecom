@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { MainLayout } from '@/components/Layout/MainLayout';
 import { LoadingScreen } from '@/components/LoadingScreen';
 import { useAuthContext } from '@/context/AuthContext';
+import { env } from '@/utils/env';
 
 export const HomePage = () => {
   const navigate = useNavigate();
@@ -34,18 +35,30 @@ export const HomePage = () => {
                 Use your Google account to access early features and get notified as new games launch.
               </p>
               <div className="mt-6 flex flex-col gap-3">
-                <GoogleLogin
-                  onSuccess={(response) => {
-                    if (!response.credential) {
-                      return;
-                    }
-                    void loginWithCredential(response.credential);
-                  }}
-                  onError={() => {
-                    // eslint-disable-next-line no-console
-                    console.error('Google Sign-In failed');
-                  }}
-                />
+                {env.authMock ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      void loginWithCredential('mock-credential');
+                    }}
+                    className="flex items-center justify-center rounded-md bg-brand px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-brand/90"
+                  >
+                    Sign in (mock)
+                  </button>
+                ) : (
+                  <GoogleLogin
+                    onSuccess={(response) => {
+                      if (!response.credential) {
+                        return;
+                      }
+                      void loginWithCredential(response.credential);
+                    }}
+                    onError={() => {
+                      // eslint-disable-next-line no-console
+                      console.error('Google Sign-In failed');
+                    }}
+                  />
+                )}
                 {loading ? <LoadingScreen message="Authenticating" className="h-24 rounded-xl" /> : null}
                 {!loading ? (
                   <p className="text-xs text-slate-500">
