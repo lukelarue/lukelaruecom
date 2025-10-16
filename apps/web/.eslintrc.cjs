@@ -8,15 +8,16 @@ module.exports = {
     'eslint:recommended',
     'plugin:react-hooks/recommended',
     'plugin:@typescript-eslint/recommended',
-    'plugin:react-refresh/recommended',
     'prettier',
   ],
   parser: '@typescript-eslint/parser',
   parserOptions: {
     ecmaVersion: 'latest',
     sourceType: 'module',
+    project: ['./tsconfig.json'],
+    tsconfigRootDir: __dirname,
   },
-  plugins: ['@typescript-eslint'],
+  plugins: ['@typescript-eslint', 'react-refresh'],
   rules: {
     '@typescript-eslint/consistent-type-imports': 'warn',
     '@typescript-eslint/no-misused-promises': [
@@ -28,5 +29,6 @@ module.exports = {
       },
     ],
     'no-console': ['warn', { allow: ['warn', 'error'] }],
+    'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
   },
 };

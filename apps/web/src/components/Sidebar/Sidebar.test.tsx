@@ -7,7 +7,7 @@ import { vi, describe, it, expect, beforeEach } from 'vitest';
 
 const mockUseAuthContext = vi.fn();
 
-vi.mock('@/context/AuthContext', () => ({
+vi.mock('@/hooks/useAuthContext', () => ({
   useAuthContext: () => mockUseAuthContext(),
 }));
 

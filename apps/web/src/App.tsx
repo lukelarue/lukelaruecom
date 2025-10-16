@@ -2,7 +2,8 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import { HomePage } from '@/pages/HomePage';
 import { LobbyPage } from '@/pages/LobbyPage';
 import { ProfilePage } from '@/pages/ProfilePage';
-import { AuthProvider, useAuthContext } from '@/context/AuthContext';
+import { AuthProvider } from '@/context/AuthContext';
+import { useAuthContext } from '@/hooks/useAuthContext';
 import { LoadingScreen } from '@/components/LoadingScreen';
 
 const ProtectedRoute = ({ children }: { children: JSX.Element }) => {

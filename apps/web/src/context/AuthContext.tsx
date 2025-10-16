@@ -1,25 +1,8 @@
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-  type ReactNode,
-} from 'react';
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { fetchCurrentSession, loginWithGoogleIdToken, signOut as signOutRequest } from '@/services/auth';
 import type { AuthSession } from '@/types';
 import { env } from '@/utils/env';
-
-export type AuthContextValue = {
-  session: AuthSession | null;
-  loading: boolean;
-  error: string | null;
-  loginWithCredential: (credential: string) => Promise<void>;
-  signOut: () => Promise<void>;
-};
-
-const AuthContext = createContext<AuthContextValue | undefined>(undefined);
+import { AuthContext, type AuthContextValue } from './AuthContext.shared';
 const LOCAL_STORAGE_KEY = 'lukelarue.auth.session';
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
@@ -150,10 +133,5 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
-export const useAuthContext = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuthContext must be used within an AuthProvider');
-  }
-  return context;
-};
+export { AuthContext } from './AuthContext.shared';
+export type { AuthContextValue } from './AuthContext.shared';

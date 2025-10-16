@@ -3,7 +3,7 @@ import { GoogleLogin } from '@react-oauth/google';
 import { useNavigate } from 'react-router-dom';
 import { MainLayout } from '@/components/Layout/MainLayout';
 import { LoadingScreen } from '@/components/LoadingScreen';
-import { useAuthContext } from '@/context/AuthContext';
+import { useAuthContext } from '@/hooks/useAuthContext';
 import { env } from '@/utils/env';
 
 export const HomePage = () => {

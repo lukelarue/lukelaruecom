@@ -1,6 +1,6 @@
 import { NavLink } from 'react-router-dom';
 import { clsx } from 'clsx';
-import { useAuthContext } from '@/context/AuthContext';
+import { useAuthContext } from '@/hooks/useAuthContext';
 
 export const Sidebar = () => {
   const { session, signOut, loading } = useAuthContext();
