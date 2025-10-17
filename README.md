@@ -2,6 +2,12 @@
 
 This repository contains a full-stack web platform prototype for a gaming website. It includes a React frontend, Node.js backend, and Terraform infrastructure for deploying on Google Cloud Platform. Future iterations will add multi-game experiences and real-time features.
 
+## Monorepo Workspaces
+
+- **Frontend UI (`apps/web/`)** – Vite/React client with mocked and API-backed auth modes.
+- **Login API (`services/login-api/`)** – Express server handling Google auth, session cookies, and Firestore persistence.
+- **Chat API (`services/chat-api/`)** – Express server exposing chat endpoints backed by Firestore.
+
 ## Installation & Environment Setup
 
 - **Prerequisites**
@@ -12,6 +18,7 @@ This repository contains a full-stack web platform prototype for a gaming websit
   ```bash
   npm install
   npm install --workspace services/login-api
+  npm install --workspace services/chat-api
   ```
 
 - **Configure login backend (`services/login-api/`)**
@@ -24,45 +31,68 @@ This repository contains a full-stack web platform prototype for a gaming websit
   - `VITE_GOOGLE_LOGIN_MOCK` retains an offline Google Sign-In experience even when talking to the login API.
   - For the fake auth flow, set `VITE_GOOGLE_CLIENT_ID=fake-google-client-id` to match the backend default.
 
-## Running Locally
+## Workspace Command Reference
 
-### Frontend only (mocked backend)
+### Frontend UI (`apps/web/`)
 
-- Use when you want to iterate on the UI without the login API.
-- Sessions are stored locally; Google login stays mocked via `VITE_GOOGLE_LOGIN_MOCK`.
-- Commands
+- **Dev servers**
   ```bash
   npm run dev:web:mock
+  npm run dev:web:backend
   ```
-  - Launches Vite in `frontend-mock` mode with no API dependency.
+  - `dev:web:mock` launches Vite in `frontend-mock` mode with no backend dependency.
+  - `dev:web:backend` talks to the login API proxy at `http://localhost:4000` (serve UI on `http://localhost:5173`). Keep frontend and backend in separate terminals.
+- **Unit tests**
+  ```bash
+  npm run test --workspace apps/web -- --run --reporter=dot
+  npm run test --workspace apps/web
+  ```
+  - Run-once versus watch mode (press `q` to exit watch).
+- **Linting**
+  ```bash
+  npm run lint --workspace apps/web
+  npm run lint --workspace apps/web -- --fix
+  ```
 
-### Full stack with mocked Google auth
+### Login API (`services/login-api/`)
 
-- Run when you need the frontend and backend together while staying offline.
-- The login backend launches the Firestore emulator (`localhost:8080`), emulator UI (`http://localhost:4001`), and login API (`http://localhost:4000`).
-- Commands
+- **Dev servers**
   ```bash
   npm run dev --workspace services/login-api
   ```
-  - Starts the login API with the emulator and fake Google auth flags enabled.
-
+  - Boots the Firestore emulator (`localhost:8080`), emulator UI (`http://localhost:4001`), and login API (`http://localhost:4000`).
+- **Unit & integration tests**
   ```bash
-  npm run dev:web:backend
+  npm test --workspace services/login-api
+  npm run test:watch --workspace services/login-api
+  npm run test:integration --workspace services/login-api
   ```
-  - Starts the frontend in `backend` mode so requests hit the login API proxy at `http://localhost:4000`.
+  - Ensure `USE_FIRESTORE_EMULATOR=1` and `USE_FAKE_GOOGLE_AUTH=1` in `.env` for integration tests. Start the Firestore emulator separately when you only need it:
+    ```bash
+    npm run dev:emulator --workspace services/login-api
+    ```
+- **Linting**
+  ```bash
+  npm run lint --workspace services/login-api
+  npm run lint --workspace services/login-api -- --fix
+  ```
 
-- Keep the login API and frontend in separate terminals. The UI is served at `http://localhost:5173`.
+### Chat API (`services/chat-api/`)
 
-### Chat API with Firestore emulator
-
-- Provides the REST endpoints consumed by the chat bar during local development.
-- Uses the same Firestore emulator instance on `127.0.0.1:8080`.
-- Commands
+- **Dev servers**
   ```bash
   npm run dev --workspace services/chat-api
   ```
-  - Starts the chat API at `http://localhost:4100` and links to the emulator.
-- Set headers `x-user-id` and `x-user-name` when calling the API directly to simulate authenticated users.
+  - Starts the chat API (`http://localhost:4100`) and Firestore emulator (`127.0.0.1:8080`). Set headers `x-user-id` and `x-user-name` when calling the API directly to simulate authenticated users.
+- **Unit tests**
+  ```bash
+  npm test --workspace services/chat-api
+  ```
+- **Linting**
+  ```bash
+  npm run lint --workspace services/chat-api
+  npm run lint --workspace services/chat-api -- --fix
+  ```
 
 ### Sample login API requests (while the backend is running)
 
@@ -92,46 +122,7 @@ curl -i -X POST http://localhost:4000/auth/signout -b cookies.txt
 - `/lobby` – Protected lobby shell (requires session).
 - `/profile` – Profile preview sourced from the authenticated session.
 
-## Testing & Quality
-
-### Unit tests
-
-- **Frontend (`apps/web/`)**
-  ```bash
-  npm run test --workspace apps/web -- --run --reporter=dot
-  npm run test --workspace apps/web
-  ```
-  - The first command runs Vitest once; the second starts watch mode (press `q` to exit).
-
-- **Login backend (`services/login-api/`)**
-  ```bash
-  npm test --workspace services/login-api
-  npm run test:watch --workspace services/login-api
-  ```
-  - Covers `loginWithGoogle()` and related auth controller behavior with mocked dependencies.
-
-### Integration tests (backend)
-
-- Ensure `USE_FIRESTORE_EMULATOR=1` and `USE_FAKE_GOOGLE_AUTH=1` in `services/login-api/.env`.
-- Start the Firestore emulator if it is not already running:
-  ```bash
-  npm run dev:emulator --workspace services/login-api
-  ```
-- Execute the suite:
-  ```bash
-  npm run test:integration --workspace services/login-api
-  ```
-- Tests live in `services/login-api/src/__tests__/auth.integration.test.ts` and validate end-to-end login, cookie issuance, and Firestore persistence.
-
-### Linting
-
-```bash
-npm run lint --workspace services/login-api
-npm run lint --workspace services/login-api -- --fix
-```
-- Runs ESLint with type-aware rules; the `--fix` variant applies safe fixes locally.
-
-### Continuous integration
+## Continuous integration
 
 - CI runs linting, unit tests, and integration tests using the commands above.
 - Match the local commands before pushing to ensure parity with the pipeline.
