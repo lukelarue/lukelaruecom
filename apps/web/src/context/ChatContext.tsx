@@ -91,19 +91,25 @@ export const ChatProvider = ({ children, defaultChannel }: ChatProviderProps) =>
     }
     try {
       const channelSummaries = await client.listChannels();
-      if (channelSummaries.length === 0 && defaultChannel) {
+      const finalSummaries = (() => {
+        if (!defaultChannel) {
+          return channelSummaries;
+        }
+        const defaultId = resolveChannelId(defaultChannel);
+        const exists = channelSummaries.some((channel) => channel.channelId === defaultId);
+        if (exists) {
+          return channelSummaries;
+        }
         const summary: ChatChannelSummary = {
-          channelId: resolveChannelId(defaultChannel),
+          channelId: defaultId,
           channelType: defaultChannel.channelType,
           metadata: buildChannelMetadata(defaultChannel),
         };
-        setChannels([summary]);
-        ensureActiveChannel([summary]);
-        return;
-      }
+        return [...channelSummaries, summary];
+      })();
 
-      setChannels(channelSummaries);
-      ensureActiveChannel(channelSummaries);
+      setChannels(finalSummaries);
+      ensureActiveChannel(finalSummaries);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to load channels';
       setError(message);

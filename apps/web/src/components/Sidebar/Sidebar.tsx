@@ -1,6 +1,10 @@
 import { NavLink } from 'react-router-dom';
 import { clsx } from 'clsx';
 import { useAuthContext } from '@/hooks/useAuthContext';
+import { ChatProvider } from '@/context/ChatContext';
+import { ChatSidebar } from '@/components/Chat/ChatSidebar';
+
+const DEFAULT_CHANNEL = { channelType: 'global' } as const;
 
 export const Sidebar = () => {
   const { session, signOut, loading } = useAuthContext();
@@ -16,10 +20,11 @@ export const Sidebar = () => {
           {!session ? <SidebarLink to="/" label="Home" /> : null}
           <SidebarLink to="/lobby" label="Lobby" disabled={!session} />
           <SidebarLink to="/profile" label="Profile" disabled={!session} />
-          <SidebarLink to="/chat" label="Chat" disabled />
         </nav>
-        <div className="mt-6 rounded-lg border border-dashed border-slate-800 bg-slate-900/60 p-4 text-sm text-slate-400">
-          Chat messages will appear here once the realtime backend is implemented.
+        <div className="mt-6">
+          <ChatProvider defaultChannel={DEFAULT_CHANNEL}>
+            <ChatSidebar />
+          </ChatProvider>
         </div>
       </div>
       <footer className="border-t border-slate-800 px-4 py-4 text-sm text-slate-300">
