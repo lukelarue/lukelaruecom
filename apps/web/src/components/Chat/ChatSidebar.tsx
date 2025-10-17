@@ -38,7 +38,10 @@ export const ChatSidebar = () => {
   ]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ block: 'end', behavior: 'smooth' });
+    const element = messagesEndRef.current;
+    if (element && typeof element.scrollIntoView === 'function') {
+      element.scrollIntoView({ block: 'end', behavior: 'smooth' });
+    }
   }, [messages]);
 
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
