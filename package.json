@@ -5,7 +5,8 @@
   "description": "Full-stack gaming platform prototype with React frontend, Node.js backend, and GCP infrastructure",
   "workspaces": [
     "apps/web",
-    "services/login-api"
+    "services/login-api",
+    "services/chat-api"
   ],
   "engines": {
     "node": ">=22 <23"

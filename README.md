@@ -53,6 +53,17 @@ This repository contains a full-stack web platform prototype for a gaming websit
 
 - Keep the login API and frontend in separate terminals. The UI is served at `http://localhost:5173`.
 
+### Chat API with Firestore emulator
+
+- Provides the REST endpoints consumed by the chat bar during local development.
+- Uses the same Firestore emulator instance on `127.0.0.1:8080`.
+- Commands
+  ```bash
+  npm run dev --workspace services/chat-api
+  ```
+  - Starts the chat API at `http://localhost:4100` and links to the emulator.
+- Set headers `x-user-id` and `x-user-name` when calling the API directly to simulate authenticated users.
+
 ### Sample login API requests (while the backend is running)
 
 ```bash
