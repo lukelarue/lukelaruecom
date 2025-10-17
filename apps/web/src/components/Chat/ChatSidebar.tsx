@@ -1,8 +1,8 @@
-import { Fragment, useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { clsx } from 'clsx';
 
 import { useAuthContext } from '@/hooks/useAuthContext';
-import { useChatContext } from '@/context/ChatContext';
+import { useChatContext } from '@/hooks/useChatContext';
 
 const formatTimestamp = (iso: string) => {
   const date = new Date(iso);

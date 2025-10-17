@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 
 import type { ChannelDescriptor, ChatChannelSummary, ChatMessage } from '@/types/chat';
 import type { ChatClient, SendMessageInput } from '@/services/chat';
@@ -12,22 +12,9 @@ import {
   formatChannelLabel,
   resolveChannelId,
 } from '@/utils/chatChannels';
+import { ChatContext, type ChatContextValue } from './ChatContext.shared';
 
 const CHAT_HISTORY_LIMIT = 50;
-
-type ChatContextValue = {
-  channels: ChatChannelSummary[];
-  activeChannelId: string | null;
-  messages: ChatMessage[];
-  loading: boolean;
-  error: string | null;
-  setActiveChannel: (descriptor: ChannelDescriptor | { channelId: string }) => void;
-  sendMessage: (body: string) => Promise<void>;
-  refreshChannels: () => Promise<void>;
-  formatChannel: (summary: ChatChannelSummary | undefined) => string;
-};
-
-const ChatContext = createContext<ChatContextValue | null>(null);
 
 const buildClient = (userId: string | undefined, userName: string | undefined): ChatClient => {
   if (env.chatMock) {
@@ -236,12 +223,4 @@ export const ChatProvider = ({ children, defaultChannel }: ChatProviderProps) =>
   );
 
   return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>;
-};
-
-export const useChatContext = () => {
-  const context = useContext(ChatContext);
-  if (!context) {
-    throw new Error('useChatContext must be used within a ChatProvider');
-  }
-  return context;
 };
