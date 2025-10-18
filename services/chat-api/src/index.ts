@@ -1,6 +1,6 @@
+import { createApp } from './app';
 import { config } from './config';
 import { getFirestore } from './lib/firestore';
-import { createApp } from './app';
 import { MessageStore } from './services/messageStore';
 
 const firestore = getFirestore();

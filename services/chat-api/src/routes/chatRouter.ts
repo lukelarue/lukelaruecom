@@ -267,7 +267,7 @@ export const createChatRouter = ({ messageStore, defaultHistoryLimit }: CreateCh
     })
   );
 
-  router.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
+  router.use((err: unknown, _req: Request, res: Response) => {
     const message = err instanceof Error ? err.message : String(err);
     res.status(500).json({ message: 'Chat router error', details: message });
   });

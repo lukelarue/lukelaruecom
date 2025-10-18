@@ -89,30 +89,34 @@ export const resolveChannelKey = (descriptor: ChannelDescriptor): string => {
     }
     case 'game':
       return descriptor.gameId.trim();
-    default:
+    default: {
       // Exhaustiveness check
       const _never: never = descriptor;
       return _never;
+    }
   }
 };
 
 export const descriptorFromParsedChannel = (parsed: ParsedChannelId): ChannelDescriptor => {
   switch (parsed.channelType) {
-    case 'global':
+    case 'global': {
       return {
         channelType: 'global',
         scope: parsed.scope,
       } satisfies ChannelDescriptor;
-    case 'direct':
+    }
+    case 'direct': {
       return {
         channelType: 'direct',
         participantIds: parsed.participantIds,
       } satisfies ChannelDescriptor;
-    case 'game':
+    }
+    case 'game': {
       return {
         channelType: 'game',
         gameId: parsed.gameId,
       } satisfies ChannelDescriptor;
+    }
     default: {
       const _never: never = parsed;
       return _never;
@@ -137,20 +141,24 @@ type ChannelMetadata = Record<string, unknown>;
 
 export const buildChannelMetadata = (descriptor: ChannelDescriptor): ChannelMetadata => {
   switch (descriptor.channelType) {
-    case 'global':
+    case 'global': {
       return {
         scope: descriptor.scope?.trim() || DEFAULT_GLOBAL_SCOPE,
       } satisfies ChannelMetadata;
-    case 'direct':
+    }
+    case 'direct': {
       return {
         participantIds: sortParticipantIds(descriptor.participantIds),
       } satisfies ChannelMetadata;
-    case 'game':
+    }
+    case 'game': {
       return {
         gameId: descriptor.gameId.trim(),
       } satisfies ChannelMetadata;
-    default:
+    }
+    default: {
       const _never: never = descriptor;
       return _never;
+    }
   }
 };
