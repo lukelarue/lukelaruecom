@@ -34,6 +34,13 @@ This repository contains a full-stack web platform prototype for a gaming websit
 
 ## Workspace Command Reference
 
+### Unified development commands
+
+- `npm run dev:backend`
+  - Boots the shared Firestore emulator/UI once, then starts the login API (`http://localhost:4000`) and chat API (`http://localhost:4100`).
+- `npm run dev:stack`
+  - Runs `dev:backend` plus the frontend in backend mode (`http://localhost:5173`).
+
 ### Frontend UI (`apps/web/`)
 
 - **Dev servers**
@@ -62,6 +69,7 @@ This repository contains a full-stack web platform prototype for a gaming websit
   npm run dev --workspace services/login-api
   ```
   - Boots the Firestore emulator (`localhost:8080`), emulator UI (`http://localhost:4001`), and login API (`http://localhost:4000`).
+  - When running alongside other services, prefer the root `npm run dev:backend` (or `npm run dev:stack`) so the emulator is started only once.
 - **Unit & integration tests**
   ```bash
   npm test --workspace services/login-api
@@ -85,6 +93,10 @@ This repository contains a full-stack web platform prototype for a gaming websit
   npm run dev --workspace services/chat-api
   ```
   - Starts the chat API (`http://localhost:4100`) and Firestore emulator (`127.0.0.1:8080`). Set headers `x-user-id` and `x-user-name` when calling the API directly to simulate authenticated users.
+  - To avoid port collisions when another service already launched the emulator, start only the API with:
+    ```bash
+    npm run dev:chat-api --workspace services/chat-api
+    ```
   - When the frontend cannot connect to this service, the UI displays "chat disabled" to signal the offline state.
 - **Unit tests**
   ```bash
