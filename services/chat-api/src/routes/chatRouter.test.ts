@@ -139,4 +139,68 @@ describe('chatRouter', () => {
     expect(historyResponse.status).toBe(400);
     expect(historyResponse.body.message).toContain('You do not have access');
   });
+
+  it('rejects unauthenticated access', async () => {
+    const response = await request(app).post('/chat/messages').send({
+      channelType: 'global',
+      body: 'Hello',
+    });
+
+    expect(response.status).toBe(401);
+    expect(response.body).toMatchObject({ message: 'Missing authentication header' });
+  });
+
+  it('validates message payload before sending', async () => {
+    const response = await authed()
+      .post('/chat/messages')
+      .send({
+        body: '',
+      });
+
+    expect(response.status).toBe(400);
+    expect(response.body.message).toBe('Invalid request');
+  });
+
+  it('returns validation errors when fetching history with bad parameters', async () => {
+    const negativeLimit = await authed()
+      .get('/chat/messages')
+      .query({ channelType: 'global', limit: 0 });
+    expect(negativeLimit.status).toBe(400);
+    expect(negativeLimit.body.message).toBe('limit must be a positive integer');
+
+    const missingDirectParticipants = await authed()
+      .get('/chat/messages')
+      .query({ channelType: 'direct' });
+    expect(missingDirectParticipants.status).toBe(400);
+    expect(missingDirectParticipants.body.message).toBe('participantIds is required for direct channels');
+
+    const missingChannelType = await authed()
+      .get('/chat/messages')
+      .query({ limit: 5 });
+    expect(missingChannelType.status).toBe(400);
+    expect(missingChannelType.body.message).toBe('channelType or channelId is required');
+  });
+
+  it('propagates descriptor errors through error handler', async () => {
+    const response = await authed()
+      .post('/chat/messages')
+      .send({
+        channelType: 'direct',
+        participantIds: ['user-1'],
+        body: 'Self message',
+      });
+
+    expect(response.status).toBe(500);
+    expect(response.body).toMatchObject({ message: 'Chat router error' });
+    expect(response.body.details).toContain('Direct messages require exactly two distinct participants');
+  });
+
+  it('requires gameId when requesting game channel history', async () => {
+    const response = await authed()
+      .get('/chat/messages')
+      .query({ channelType: 'game' });
+
+    expect(response.status).toBe(400);
+    expect(response.body.message).toBe('gameId is required for game channels');
+  });
 });
