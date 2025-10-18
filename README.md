@@ -4,7 +4,7 @@ This repository contains a full-stack web platform prototype for a gaming websit
 
 ## Monorepo Workspaces
 
-- **Frontend UI (`apps/web/`)** – Vite/React client with mocked and API-backed auth modes.
+- **Frontend UI (`apps/web/`)** – Vite/React client with mocked and API-backed auth modes. The chat bar disables itself with a "chat disabled" notice when it cannot reach the chat backend.
 - **Login API (`services/login-api/`)** – Express server handling Google auth, session cookies, and Firestore persistence.
 - **Chat API (`services/chat-api/`)** – Express server exposing chat endpoints backed by Firestore.
 
@@ -30,6 +30,7 @@ This repository contains a full-stack web platform prototype for a gaming websit
   - `VITE_AUTH_MODE` switches between mock (`frontend-mock`) and login-API-backed (`backend`) auth flows.
   - `VITE_GOOGLE_LOGIN_MOCK` retains an offline Google Sign-In experience even when talking to the login API.
   - For the fake auth flow, set `VITE_GOOGLE_CLIENT_ID=fake-google-client-id` to match the backend default.
+  - If the chat API is not running locally, the in-app chat shows "chat disabled" rather than attempting to send messages.
 
 ## Workspace Command Reference
 
@@ -67,7 +68,7 @@ This repository contains a full-stack web platform prototype for a gaming websit
   npm run test:watch --workspace services/login-api
   npm run test:integration --workspace services/login-api
   ```
-  - Ensure `USE_FIRESTORE_EMULATOR=1` and `USE_FAKE_GOOGLE_AUTH=1` in `.env` for integration tests. Start the Firestore emulator separately when you only need it:
+  - Ensure `USE_FIRESTORE_EMULATOR=true` and `USE_FAKE_GOOGLE_AUTH=true` in `.env` for integration tests. Start the Firestore emulator separately when you only need it:
     ```bash
     npm run dev:emulator --workspace services/login-api
     ```
@@ -84,6 +85,7 @@ This repository contains a full-stack web platform prototype for a gaming websit
   npm run dev --workspace services/chat-api
   ```
   - Starts the chat API (`http://localhost:4100`) and Firestore emulator (`127.0.0.1:8080`). Set headers `x-user-id` and `x-user-name` when calling the API directly to simulate authenticated users.
+  - When the frontend cannot connect to this service, the UI displays "chat disabled" to signal the offline state.
 - **Unit tests**
   ```bash
   npm test --workspace services/chat-api
