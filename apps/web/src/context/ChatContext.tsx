@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { isAxiosError } from 'axios';
 
 import type { ChannelDescriptor, ChatChannelSummary, ChatMessage } from '@/types/chat';
 import type { ChatClient, SendMessageInput } from '@/services/chat';
 import { createHttpChatClient } from '@/services/chat/httpClient';
-import { createMockChatClient } from '@/services/chat/mockClient';
 import { useAuthContext } from '@/hooks/useAuthContext';
 import { env } from '@/utils/env';
 import {
@@ -16,18 +16,28 @@ import { ChatContext, type ChatContextValue } from './ChatContext.shared';
 
 const CHAT_HISTORY_LIMIT = 50;
 
-const buildClient = (userId: string | undefined, userName: string | undefined): ChatClient => {
-  if (env.chatMock) {
-    return createMockChatClient({ currentUserId: userId });
+const shouldDisableChat = (error: unknown): boolean => {
+  if (!isAxiosError(error)) {
+    return false;
+  }
+  if (error.code === 'ERR_NETWORK') {
+    return true;
+  }
+  if (!error.response) {
+    return true;
+  }
+  return error.response.status >= 500;
+};
+
+const buildClient = (userId: string | undefined, userName: string | undefined): ChatClient | null => {
+  if (!userId) {
+    return null;
   }
 
   return createHttpChatClient({
     baseUrl: env.chatApiBaseUrl,
     getAuthHeaders: () => {
-      if (!userId) {
-        return null;
-      }
-      return { userId, userName };
+      return userName ? { userId, userName } : { userId };
     },
   });
 };
@@ -44,6 +54,7 @@ export const ChatProvider = ({ children, defaultChannel }: ChatProviderProps) =>
   const [activeChannelId, setActiveChannelId] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState(false);
+  const [disabled, setDisabled] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -51,6 +62,11 @@ export const ChatProvider = ({ children, defaultChannel }: ChatProviderProps) =>
     const userName = session?.user.name ?? session?.user.email;
     const chatClient = buildClient(userId, userName);
     setClient(chatClient);
+    setChannels([]);
+    setActiveChannelId(null);
+    setMessages([]);
+    setDisabled(false);
+    setError(null);
   }, [session]);
 
   const ensureActiveChannel = useCallback(
@@ -97,7 +113,17 @@ export const ChatProvider = ({ children, defaultChannel }: ChatProviderProps) =>
 
       setChannels(finalSummaries);
       ensureActiveChannel(finalSummaries);
+      setDisabled(false);
+      setError(null);
     } catch (err) {
+      if (shouldDisableChat(err)) {
+        setDisabled(true);
+        setError('Chat Disabled');
+        setChannels([]);
+        setActiveChannelId(null);
+        setMessages([]);
+        return;
+      }
       const message = err instanceof Error ? err.message : 'Failed to load channels';
       setError(message);
     }
@@ -112,18 +138,18 @@ export const ChatProvider = ({ children, defaultChannel }: ChatProviderProps) =>
 
   const subscribeToActiveChannel = useCallback(
     (channelId: string) => {
-      if (!client) {
+      if (!client || disabled) {
         return () => {};
       }
       return client.subscribe(channelId, (message) => {
         setMessages((prev) => [...prev, message]);
       });
     },
-    [client]
+    [client, disabled]
   );
 
   useEffect(() => {
-    if (!client || !activeChannelId) {
+    if (!client || !activeChannelId || disabled) {
       setMessages([]);
       return;
     }
@@ -139,12 +165,20 @@ export const ChatProvider = ({ children, defaultChannel }: ChatProviderProps) =>
         if (!cancelled) {
           setMessages(history);
           unsubscribe = subscribeToActiveChannel(activeChannelId);
+          setDisabled(false);
         }
       } catch (err) {
         if (!cancelled) {
-          const message = err instanceof Error ? err.message : 'Failed to load messages';
-          setError(message);
-          setMessages([]);
+          if (shouldDisableChat(err)) {
+            setDisabled(true);
+            setError('Chat Disabled');
+            setMessages([]);
+            setActiveChannelId(null);
+          } else {
+            const message = err instanceof Error ? err.message : 'Failed to load messages';
+            setError(message);
+            setMessages([]);
+          }
         }
       } finally {
         if (!cancelled) {
@@ -159,7 +193,7 @@ export const ChatProvider = ({ children, defaultChannel }: ChatProviderProps) =>
       cancelled = true;
       unsubscribe?.();
     };
-  }, [client, activeChannelId, subscribeToActiveChannel]);
+  }, [client, activeChannelId, subscribeToActiveChannel, disabled]);
 
   const setActiveChannel = useCallback((target: ChannelDescriptor | { channelId: string }) => {
     if ('channelId' in target) {
@@ -172,7 +206,7 @@ export const ChatProvider = ({ children, defaultChannel }: ChatProviderProps) =>
 
   const sendMessage = useCallback(
     async (body: string) => {
-      if (!client || !activeChannelId) {
+      if (!client || !activeChannelId || disabled) {
         return;
       }
       const summary = channels.find((channel) => channel.channelId === activeChannelId);
@@ -192,12 +226,21 @@ export const ChatProvider = ({ children, defaultChannel }: ChatProviderProps) =>
       try {
         const sent = await client.sendMessage(input);
         setMessages((prev) => [...prev, sent]);
+        setError(null);
+        setDisabled(false);
       } catch (err) {
+        if (shouldDisableChat(err)) {
+          setDisabled(true);
+          setError('Chat Disabled');
+          setActiveChannelId(null);
+          setMessages([]);
+          return;
+        }
         const message = err instanceof Error ? err.message : 'Failed to send message';
         setError(message);
       }
     },
-    [client, activeChannelId, channels, session]
+    [client, activeChannelId, channels, session, disabled]
   );
 
   const formatChannel = useCallback(
@@ -213,13 +256,14 @@ export const ChatProvider = ({ children, defaultChannel }: ChatProviderProps) =>
       activeChannelId,
       messages,
       loading,
+      disabled,
       error,
       setActiveChannel,
       sendMessage,
       refreshChannels,
       formatChannel,
     }),
-    [channels, activeChannelId, messages, loading, error, setActiveChannel, sendMessage, refreshChannels, formatChannel]
+    [channels, activeChannelId, messages, loading, disabled, error, setActiveChannel, sendMessage, refreshChannels, formatChannel]
   );
 
   return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>;

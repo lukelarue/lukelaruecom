@@ -33,34 +33,6 @@ const resolveAuthMode = (): 'frontend-mock' | 'backend' => {
 const authMode = resolveAuthMode();
 const authMock = authMode === 'frontend-mock';
 
-const resolveChatMode = (): 'mock' | 'backend' => {
-  const modeHint = import.meta.env.MODE;
-  if (modeHint === 'frontend-mock') {
-    return 'mock';
-  }
-
-  const explicitMode = import.meta.env.VITE_CHAT_MODE;
-  if (explicitMode === 'mock') {
-    return 'mock';
-  }
-  if (explicitMode === 'backend') {
-    return 'backend';
-  }
-
-  const explicitMock = import.meta.env.VITE_CHAT_MOCK;
-  if (explicitMock === 'true') {
-    return 'mock';
-  }
-  if (explicitMock === 'false') {
-    return 'backend';
-  }
-
-  return authMock ? 'mock' : 'backend';
-};
-
-const chatMode = resolveChatMode();
-const chatMock = chatMode === 'mock';
-
 const googleLoginMockEnv = import.meta.env.VITE_GOOGLE_LOGIN_MOCK;
 const googleLoginMock = googleLoginMockEnv ? googleLoginMockEnv === 'true' : import.meta.env.DEV;
 
@@ -73,8 +45,6 @@ export const env = {
   googleClientId,
   authMode,
   authMock,
-  chatMode,
-  chatMock,
   googleLoginMock,
   fakeGoogleCredential,
 };

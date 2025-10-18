@@ -23,6 +23,7 @@ export const ChatSidebar = () => {
     setActiveChannel,
     messages,
     loading,
+    disabled,
     error,
     sendMessage,
     formatChannel,
@@ -62,6 +63,14 @@ export const ChatSidebar = () => {
     return (
       <div className="rounded-lg border border-dashed border-slate-800 bg-slate-900/60 p-4 text-sm text-slate-400">
         Sign in to start chatting with other players.
+      </div>
+    );
+  }
+
+  if (disabled) {
+    return (
+      <div className="rounded-lg border border-dashed border-slate-800 bg-slate-900/60 p-4 text-sm text-slate-400">
+        Chat Disabled
       </div>
     );
   }

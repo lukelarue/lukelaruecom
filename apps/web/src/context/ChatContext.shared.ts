@@ -7,6 +7,7 @@ export type ChatContextValue = {
   activeChannelId: string | null;
   messages: ChatMessage[];
   loading: boolean;
+  disabled: boolean;
   error: string | null;
   setActiveChannel: (descriptor: ChannelDescriptor | { channelId: string }) => void;
   sendMessage: (body: string) => Promise<void>;
