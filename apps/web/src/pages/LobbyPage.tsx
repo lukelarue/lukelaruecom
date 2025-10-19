@@ -1,5 +1,5 @@
 import { MainLayout } from '@/components/Layout/MainLayout';
-import { useAuthContext } from '@/context/AuthContext';
+import { useAuthContext } from '@/hooks/useAuthContext';
 
 export const LobbyPage = () => {
   const { session } = useAuthContext();
