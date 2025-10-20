@@ -10,8 +10,14 @@ const CHAT_MESSAGES_COLLECTION = 'chatMessages';
 let firestore: Firestore;
 let app: Express;
 
-const withAuthHeaders = (agent: request.SuperTest<request.Test>, userId = 'integration-user', userName = 'Integration User') =>
-  agent.set('x-user-id', userId).set('x-user-name', userName);
+const withAuthHeaders = (agent: request.SuperTest<request.Test>, userId = 'integration-user', userName = 'Integration User') => {
+  const applyAuth = (test: request.Test) => test.set('x-user-id', userId).set('x-user-name', userName);
+
+  return {
+    post: (path: string) => applyAuth(agent.post(path)),
+    get: (path: string) => applyAuth(agent.get(path)),
+  };
+};
 
 const clearChatCollection = async () => {
   const docs = await firestore.collection(CHAT_MESSAGES_COLLECTION).listDocuments();
