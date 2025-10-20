@@ -15,7 +15,9 @@
     "build": "tsc -p tsconfig.build.json",
     "lint": "eslint src --ext .ts",
     "format": "prettier --write .",
-    "test": "vitest"
+    "test": "vitest --config vitest.unit.config.ts",
+    "test:unit": "vitest --config vitest.unit.config.ts",
+    "test:integration": "vitest --config vitest.integration.config.ts"
   },
   "dependencies": {
     "@google-cloud/firestore": "^7.9.0",

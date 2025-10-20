@@ -119,7 +119,11 @@ This repository contains a full-stack web platform prototype for a gaming websit
   - When the frontend cannot connect to this service, the UI displays "chat disabled" to signal the offline state.
 - **Unit tests**
   ```bash
-  npm test --workspace services/chat-api
+  npm run test:unit --workspace services/chat-api
+  ```
+- **Integration tests**
+  ```bash
+  npm run test:integration --workspace services/chat-api
   ```
 - **Linting**
   ```bash

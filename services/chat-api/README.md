@@ -41,7 +41,8 @@ Copy `.env.example.chat-api` to `.env` to start with local defaults.
   ```
 - **Tests**
   ```bash
-  npm test --workspace services/chat-api
+  npm run test:unit --workspace services/chat-api
+  npm run test:integration --workspace services/chat-api
   ```
 
 ## Authentication requirements
