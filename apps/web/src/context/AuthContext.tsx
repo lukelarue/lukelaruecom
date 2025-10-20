@@ -72,10 +72,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (!cancelled && remoteSession) {
           setSession(remoteSession);
         }
+        if (!cancelled && !remoteSession) {
+          setSession(null);
+          setError(null);
+        }
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Failed to load session';
         if (!cancelled) {
           setError(message);
+          setSession(null);
         }
       } finally {
         if (!cancelled) {
