@@ -27,10 +27,29 @@ This repository contains a full-stack web platform prototype for a gaming websit
 
 - **Configure frontend (`apps/web/`)**
   - Copy `.env.example` to `.env`.
+  - `VITE_LOGIN_API_BASE_URL` should point at `http://localhost:4000` when you are running the full stack locally.
   - `VITE_AUTH_MODE` switches between mock (`frontend-mock`) and login-API-backed (`backend`) auth flows.
   - `VITE_GOOGLE_LOGIN_MOCK` retains an offline Google Sign-In experience even when talking to the login API.
   - For the fake auth flow, set `VITE_GOOGLE_CLIENT_ID=fake-google-client-id` to match the backend default.
   - If the chat API is not running locally, the in-app chat shows "chat disabled" rather than attempting to send messages.
+
+## Quick start: run the full stack
+
+1. **Prepare environment files**
+   - Copy `apps/web/.env.example` to `apps/web/.env` and `services/login-api/.env.example.login-api` to `services/login-api/.env`.
+   - Ensure `WEB_APP_ORIGINS=http://localhost:5173` in the login API `.env` and `VITE_LOGIN_API_BASE_URL=http://localhost:4000` in the frontend `.env`.
+2. **Install dependencies** (once per clone):
+   ```bash
+   npm install
+   npm install --workspace services/login-api
+   npm install --workspace services/chat-api
+   ```
+3. **Start everything**
+   ```bash
+   npm run dev:stack
+   ```
+   - Spawns the login and chat APIs (ports `4000` and `4100`) plus the frontend in backend-auth mode on `http://localhost:5173`.
+4. **Sign in** via the landing page to create a mock Google session and reach the lobby.
 
 ## Workspace Command Reference
 

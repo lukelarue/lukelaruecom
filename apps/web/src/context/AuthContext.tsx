@@ -63,6 +63,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const bootstrap = async () => {
       if (env.authMock) {
+        setLoading(false);
         return;
       }
       setLoading(true);
@@ -96,6 +97,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       if (env.authMock) {
         setSession(mockSession);
+        setLoading(false);
         return;
       }
       const authSession = await loginWithGoogleIdToken(credential);
