@@ -9,6 +9,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<AuthSession | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [bootstrapped, setBootstrapped] = useState(false);
 
   const mockSession: AuthSession = useMemo(
     () => ({
@@ -55,36 +56,48 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [session]);
 
   useEffect(() => {
-    if (session) {
+    if (bootstrapped) {
       return;
     }
 
-    let cancelled = false;
+    let isActive = true;
 
     const bootstrap = async () => {
       if (env.authMock) {
-        setLoading(false);
+        if (isActive) {
+          setLoading(false);
+          setBootstrapped(true);
+        }
         return;
       }
+
       setLoading(true);
+
       try {
         const remoteSession = await fetchCurrentSession();
-        if (!cancelled && remoteSession) {
-          setSession(remoteSession);
+
+        if (!isActive) {
+          return;
         }
-        if (!cancelled && !remoteSession) {
+
+        if (remoteSession) {
+          setSession(remoteSession);
+        } else {
           setSession(null);
           setError(null);
         }
       } catch (err) {
-        const message = err instanceof Error ? err.message : 'Failed to load session';
-        if (!cancelled) {
-          setError(message);
-          setSession(null);
+        if (!isActive) {
+          return;
         }
+
+        const message = err instanceof Error ? err.message : 'Failed to load session';
+        setError(message);
+        setSession(null);
       } finally {
-        if (!cancelled) {
+        if (isActive) {
           setLoading(false);
+          setBootstrapped(true);
         }
       }
     };
@@ -92,9 +105,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     void bootstrap();
 
     return () => {
-      cancelled = true;
+      isActive = false;
     };
-  }, [session]);
+  }, [bootstrapped]);
 
   const loginWithCredential = useCallback(async (credential: string) => {
     setLoading(true);
@@ -103,16 +116,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (env.authMock) {
         setSession(mockSession);
         setLoading(false);
+        setBootstrapped(true);
         return;
       }
       const authSession = await loginWithGoogleIdToken(credential);
       setSession(authSession);
+      setBootstrapped(true);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unknown authentication error';
       setError(message);
       setSession(null);
     } finally {
       setLoading(false);
+      setBootstrapped(true);
     }
   }, [mockSession]);
 
@@ -129,12 +145,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       setSession(null);
       setLoading(false);
+      setBootstrapped(true);
     }
   }, []);
 
   const value = useMemo<AuthContextValue>(
-    () => ({ session, loading, error, loginWithCredential, signOut }),
-    [session, loading, error, loginWithCredential, signOut]
+    () => ({ session, loading, bootstrapped, error, loginWithCredential, signOut }),
+    [session, loading, bootstrapped, error, loginWithCredential, signOut]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
