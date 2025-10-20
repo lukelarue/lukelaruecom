@@ -2,32 +2,33 @@ import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Sidebar } from './Sidebar';
 import { renderWithRouter } from '@/test/test-utils';
-import type { AuthContextValue } from '@/context/AuthContext';
-import { vi, describe, it, expect, beforeEach } from 'vitest';
+import { AuthContext, type AuthContextValue } from '@/context/AuthContext';
+import { vi, describe, it, expect } from 'vitest';
 
-const mockUseAuthContext = vi.fn();
+const createAuthContext = (overrides: Partial<AuthContextValue> = {}): AuthContextValue => ({
+  session: null,
+  loading: false,
+  bootstrapped: true,
+  error: null,
+  loginWithCredential: vi.fn(() => Promise.resolve()),
+  signOut: vi.fn(() => Promise.resolve()),
+  ...overrides,
+});
 
-vi.mock('@/hooks/useAuthContext', () => ({
-  useAuthContext: () => mockUseAuthContext(),
-}));
+const renderSidebar = (authContext: AuthContextValue, options?: Parameters<typeof renderWithRouter>[1]) => {
+  return renderWithRouter(
+    <AuthContext.Provider value={authContext}>
+      <Sidebar />
+    </AuthContext.Provider>,
+    options
+  );
+};
 
 describe('Sidebar', () => {
-  const baseContext: AuthContextValue = {
-    session: null,
-    loading: false,
-    error: null,
-    loginWithCredential: vi.fn(() => Promise.resolve()),
-    signOut: vi.fn(() => Promise.resolve()),
-  };
-
-  beforeEach(() => {
-    mockUseAuthContext.mockReset();
-  });
-
   it('shows guest navigation when no session is present', () => {
-    mockUseAuthContext.mockReturnValue(baseContext);
+    const context = createAuthContext();
 
-    renderWithRouter(<Sidebar />);
+    renderSidebar(context);
 
     expect(screen.getByText('Home')).toBeInTheDocument();
     const lobbyLabel = screen.getByText('Lobby');
@@ -38,8 +39,7 @@ describe('Sidebar', () => {
 
   it('enables navigation and sign-out for an authenticated user', async () => {
     const signOut = vi.fn().mockResolvedValue(undefined);
-    mockUseAuthContext.mockReturnValue({
-      ...baseContext,
+    const context = createAuthContext({
       session: {
         user: {
           id: 'user-1',
@@ -52,7 +52,7 @@ describe('Sidebar', () => {
     });
 
     const user = userEvent.setup();
-    renderWithRouter(<Sidebar />, {
+    renderSidebar(context, {
       initialEntries: ['/lobby'],
     });
 
@@ -67,8 +67,7 @@ describe('Sidebar', () => {
   });
 
   it('shows loading state on sign-out button when auth is busy', () => {
-    mockUseAuthContext.mockReturnValue({
-      ...baseContext,
+    const context = createAuthContext({
       session: {
         user: {
           id: 'user-1',
@@ -80,7 +79,7 @@ describe('Sidebar', () => {
       loading: true,
     });
 
-    renderWithRouter(<Sidebar />);
+    renderSidebar(context);
 
     const signOutButton = screen.getByRole('button', { name: /signing out/i });
     expect(signOutButton).toBeDisabled();
