@@ -3,6 +3,7 @@ import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vite
 
 import type { Config } from '../../config';
 import type { GetFirestore } from '../../lib/firestore';
+import type { UserProfile } from '../../types';
 
 vi.mock('../../lib/googleAuth', () => ({
   verifyGoogleIdToken: vi.fn(),
@@ -237,7 +238,7 @@ describe('getSession', () => {
     const payload = { userId: 'user-123' };
     jwtVerifyMock.mockReturnValue(payload);
 
-    const userData: any = {
+    const userData: Omit<UserProfile, 'id'> = {
       email: 'user@example.com',
       name: 'User Example',
       pictureUrl: 'https://example.com/pic.png',
