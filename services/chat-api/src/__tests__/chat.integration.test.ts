@@ -1,16 +1,22 @@
 import type { Firestore } from '@google-cloud/firestore';
 import type { Express } from 'express';
 import request from 'supertest';
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import type { MessageStoreContract } from '../services/messageStore';
 import type { ChatMessageRecord } from '../types/chat';
 
 const CHAT_MESSAGES_COLLECTION = 'chatMessages';
 
 let firestore: Firestore;
 let app: Express;
+let messageStore: MessageStoreContract;
 
-const withAuthHeaders = (agent: request.SuperTest<request.Test>, userId = 'integration-user', userName = 'Integration User') => {
+const withAuthHeaders = (
+  agent: request.SuperTest<request.Test>,
+  userId = 'integration-user',
+  userName = 'Integration User'
+) => {
   const applyAuth = (test: request.Test) => test.set('x-user-id', userId).set('x-user-name', userName);
 
   return {
@@ -38,7 +44,7 @@ describe('chat api integration (offline)', () => {
     const { MessageStore } = await import('../services/messageStore');
     const { createApp } = await import('../app');
 
-    const messageStore = new MessageStore({ firestore });
+    messageStore = new MessageStore({ firestore });
     app = createApp({ messageStore });
   });
 
@@ -111,5 +117,146 @@ describe('chat api integration (offline)', () => {
         channelId: 'direct:user-1--user-2',
       })
       .expect(400);
+  });
+
+  it('paginates global history using limit and before cursor ordering', async () => {
+    const agent = withAuthHeaders(request(app), 'paginator', 'Paginator User');
+
+    const createdMessages: ChatMessageRecord[] = [];
+    for (let index = 0; index < 5; index += 1) {
+      const messageBody = `Message ${index}`;
+      const response = await agent
+        .post('/chat/messages')
+        .send({
+          channelType: 'global',
+          body: messageBody,
+        })
+        .expect(201);
+
+      createdMessages.push(response.body.message as ChatMessageRecord);
+      await new Promise((resolve) => setTimeout(resolve, 5));
+    }
+
+    const firstPage = await agent
+      .get('/chat/messages')
+      .query({ channelType: 'global', limit: 2 })
+      .expect(200);
+
+    const firstMessages = firstPage.body.messages as ChatMessageRecord[];
+    expect(firstMessages).toHaveLength(2);
+    expect(firstMessages[0]!.body).toBe('Message 0');
+    expect(firstMessages[1]!.body).toBe('Message 1');
+
+    const fullHistory = await agent
+      .get('/chat/messages')
+      .query({ channelType: 'global', limit: 10 })
+      .expect(200);
+
+    const allMessages = fullHistory.body.messages as ChatMessageRecord[];
+    expect(allMessages).toHaveLength(5);
+    expect(allMessages.map((message) => message.body)).toEqual(
+      createdMessages.map((message) => message.body)
+    );
+  });
+
+  it('validates channel payloads and enforces limits', async () => {
+    const agent = withAuthHeaders(request(app), 'validator', 'Validator User');
+
+    const missingChannelType = await agent
+      .post('/chat/messages')
+      .send({ body: 'Missing channelType' })
+      .expect(400);
+    expect(missingChannelType.body.message).toBe('Invalid request');
+
+    const oversizeBody = 'x'.repeat(2001);
+    const oversizeResponse = await agent
+      .post('/chat/messages')
+      .send({ channelType: 'global', body: oversizeBody })
+      .expect(400);
+    expect(oversizeResponse.body.message).toBe('Invalid request');
+
+    const unsupportedCombination = await agent
+      .post('/chat/messages')
+      .send({ channelType: 'game', body: 'Hello game' })
+      .expect(400);
+    expect(unsupportedCombination.body.message).toBe('Invalid request');
+  });
+
+  it('handles multi-user broadcast and metadata round-trip', async () => {
+    const sender = withAuthHeaders(request(app), 'broadcaster', 'Broadcaster');
+    const receiver = withAuthHeaders(request(app), 'listener', 'Listener');
+
+    const broadcast = await sender
+      .post('/chat/messages')
+      .send({
+        channelType: 'global',
+        body: 'Hello everyone',
+        metadata: { mood: 'excited' },
+        senderDisplayName: 'Castor',
+      })
+      .expect(201);
+
+    const createdMessage = broadcast.body.message as ChatMessageRecord;
+    expect(createdMessage.metadata?.scope).toBe('default');
+    expect(createdMessage.senderDisplayName).toBe('Castor');
+
+    const receiverHistory = await receiver
+      .get('/chat/messages')
+      .query({ channelType: 'global', limit: 10 })
+      .expect(200);
+
+    const receiverMessages = receiverHistory.body.messages as ChatMessageRecord[];
+    expect(receiverMessages).toHaveLength(1);
+    expect(receiverMessages[0]!.senderDisplayName).toBe('Castor');
+    expect(receiverMessages[0]!.metadata?.mood).toBe('excited');
+
+    const partner = withAuthHeaders(request(app), 'partner', 'Partner');
+    await sender
+      .post('/chat/messages')
+      .send({
+        channelType: 'direct',
+        participantIds: ['partner'],
+        body: 'Direct hello',
+      })
+      .expect(201);
+
+    const partnerHistory = await partner
+      .get('/chat/messages')
+      .query({ channelType: 'direct', participantIds: 'broadcaster' })
+      .expect(200);
+
+    expect(partnerHistory.body.messages).toHaveLength(1);
+    expect(partnerHistory.body.messages[0]?.body).toBe('Direct hello');
+
+    await partner
+      .post('/chat/messages')
+      .send({
+        channelType: 'direct',
+        participantIds: ['broadcaster'],
+        body: 'Reply hello',
+      })
+      .expect(201);
+
+    const crossCheck = await sender
+      .get('/chat/messages')
+      .query({ channelType: 'direct', participantIds: 'partner' })
+      .expect(200);
+    expect(crossCheck.body.messages).toHaveLength(2);
+  });
+
+  it('returns server errors when Firestore is unavailable', async () => {
+    const agent = withAuthHeaders(request(app), 'outage-user', 'Outage User');
+
+    const saveSpy = vi
+      .spyOn(messageStore, 'saveMessage')
+      .mockRejectedValueOnce(new Error('Firestore offline'));
+
+    const errorResponse = await agent
+      .post('/chat/messages')
+      .send({ channelType: 'global', body: 'Will fail' })
+      .expect(500);
+    expect(errorResponse.body.message).toBe('Internal server error');
+
+    saveSpy.mockRestore();
   });
 });

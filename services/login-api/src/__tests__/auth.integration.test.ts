@@ -135,4 +135,51 @@ describe('auth integration (offline)', () => {
       lastLoginAt: profile.lastLoginAt,
     });
   });
+
+  it('rejects malformed credentials and requires session cookies', async () => {
+    const malformedResponse = await request(app)
+      .post('/auth/google')
+      .set('Content-Type', 'application/json')
+      .send({ credential: 'invalid' })
+      .expect(400);
+
+    expect(malformedResponse.body.message).toBe('Invalid request');
+
+    const sessionResponse = await request(app).get('/auth/session').expect(401);
+    expect(sessionResponse.body.message).toBe('Not authenticated');
+  });
+
+  it('refreshes lastLoginAt on stale profiles and invalidates sessions when user is deleted', async () => {
+    const agent = request.agent(app);
+
+    const firstLogin = await agent
+      .post('/auth/google')
+      .set('Content-Type', 'application/json')
+      .send({ credential: loginCredential })
+      .expect(200);
+
+    const firstProfile = firstLogin.body.user as UserProfile;
+
+    const userDocRef = firestore.collection(USERS_COLLECTION).doc(TEST_USER_ID);
+    const staleTimestamp = new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString();
+    await userDocRef.update({ lastLoginAt: staleTimestamp });
+
+    const secondLogin = await agent
+      .post('/auth/google')
+      .set('Content-Type', 'application/json')
+      .send({ credential: loginCredential })
+      .expect(200);
+
+    const refreshedProfile = secondLogin.body.user as UserProfile;
+    expect(new Date(refreshedProfile.lastLoginAt).getTime()).toBeGreaterThan(new Date(staleTimestamp).getTime());
+    expect(refreshedProfile.createdAt).toBe(firstProfile.createdAt);
+
+    await userDocRef.delete();
+
+    const invalidSessionResponse = await agent.get('/auth/session').expect(401);
+    const invalidCookies = invalidSessionResponse.headers['set-cookie'];
+    const cookieHeader = Array.isArray(invalidCookies) ? invalidCookies.join(';') : invalidCookies;
+    expect(cookieHeader ?? '').toContain(`${config.session.cookieName}=`);
+    expect(invalidSessionResponse.body.message).toBe('Session no longer valid');
+  });
 });
