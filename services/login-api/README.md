@@ -1,12 +1,13 @@
 # Login API Service
 
-This package (`services/login-api/`) exposes authentication endpoints for the LukeLaRue platform. It exchanges Google ID tokens for sessions, persists user profiles to Firestore, and issues HTTP-only cookies consumed by the frontend.
+This package (`services/login-api/`) exposes authentication endpoints for the LukeLaRue platform. It exchanges Google ID tokens for sessions, persists user profiles to Firestore, and issues HTTP-only cookies consumed by the frontend. Repository-wide setup steps live in the root `README.md`.
 
 ## Prerequisites
 
 - Node.js 22 (per workspace engines) and npm 10+
 - Firestore emulator (`firebase-tools`) for local development
 - Optional: valid Google OAuth client ID when `USE_FAKE_GOOGLE_AUTH` is disabled
+- Dependencies installed via `npm install` at the repo root (covers this workspace)
 
 ## Environment variables
 
@@ -25,27 +26,21 @@ Copy `.env.example.login-api` to `.env` and adjust values for your environment.
 
 ## Local development
 
-- **Install dependencies**
-  ```bash
-  npm install
-  npm install --workspace services/login-api
-  ```
-- **Run with emulator**
-  ```bash
-  npm run dev:login
-  ```
-  Boots the Firestore emulator, emulator UI, and the API on `http://localhost:4000`. Equivalent workspace command: `npm run dev --workspace services/login-api`.
-- **Build**
-  ```bash
-  npm run build --workspace services/login-api
-  ```
-- **Tests**
-  ```bash
-  npm run test:unit:login
-  npm run test:integration:login
-  npm run test:watch --workspace services/login-api
-  npm run test:integration:watch --workspace services/login-api
-  ```
+| Command | Description |
+| --- | --- |
+| `npm run dev:login` | Start Firestore (emulator), emulator UI, and the API at `http://localhost:4000`. |
+| `npm run dev:login:api` | Start only the API when an emulator already exists. |
+| `npm --workspace services/login-api run dev` | Workspace-local equivalent to `npm run dev:login`. |
+| `npm --workspace services/login-api run build` | Compile TypeScript via `tsc`. |
+
+## Testing
+
+| Command | Description |
+| --- | --- |
+| `npm run test:unit:login` | Execute the workspace unit suite from the repo root. |
+| `npm run test:integration:login` | Execute the workspace integration suite from the repo root. |
+| `npm --workspace services/login-api run test:watch` | Run unit tests in watch mode. |
+| `npm --workspace services/login-api run test:integration:watch` | Run integration tests in watch mode. |
 
 ## Authentication workflow
 

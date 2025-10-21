@@ -1,12 +1,13 @@
 # Chat API Service
 
-This package (`services/chat-api/`) provides chat capabilities for the LukeLaRue platform. It enforces per-channel access rules, persists messages to Firestore, and exposes REST endpoints for listing channels and fetching message history.
+This package (`services/chat-api/`) provides chat capabilities for the LukeLaRue platform. It enforces per-channel access rules, persists messages to Firestore, and exposes REST endpoints for listing channels and fetching message history. Repository-wide setup instructions live in the root `README.md`.
 
 ## Prerequisites
 
 - Node.js 22 (per workspace engines) and npm 10+
 - Firestore emulator (`firebase-tools`) for local development
 - Login API service issuing user IDs for authenticated requests
+- Dependencies installed via `npm install` at the repo root (covers this workspace)
 
 ## Environment variables
 
@@ -21,31 +22,21 @@ Copy `.env.example.chat-api` to `.env` to start with local defaults.
 
 ## Local development
 
-- **Install dependencies**
-  ```bash
-  npm install
-  npm install --workspace services/chat-api
-  ```
-- **Run with emulator**
-  ```bash
-  npm run dev:chat
-  ```
-  Starts the Firestore emulator and the API at `http://localhost:4100`. Equivalent workspace command: `npm run dev --workspace services/chat-api`.
-- **Run API only** (when emulator already running)
-  ```bash
-  npm run dev:chat:api
-  ```
-- **Build**
-  ```bash
-  npm run build --workspace services/chat-api
-  ```
-- **Tests**
-  ```bash
-  npm run test:unit:chat
-  npm run test:integration:chat
-  npm run test:watch --workspace services/chat-api
-  npm run test:integration:watch --workspace services/chat-api
-  ```
+| Command | Description |
+| --- | --- |
+| `npm run dev:chat` | Start Firestore (emulator) and the API at `http://localhost:4100`. |
+| `npm run dev:chat:api` | Start only the API when an emulator is already running. |
+| `npm --workspace services/chat-api run dev` | Workspace-local equivalent to `npm run dev:chat`. |
+| `npm --workspace services/chat-api run build` | Compile TypeScript via `tsc`. |
+
+## Testing
+
+| Command | Description |
+| --- | --- |
+| `npm run test:unit:chat` | Execute the workspace unit suite from the repo root. |
+| `npm run test:integration:chat` | Execute the workspace integration suite from the repo root. |
+| `npm --workspace services/chat-api run test:watch` | Run unit tests in watch mode. |
+| `npm --workspace services/chat-api run test:integration:watch` | Run integration tests in watch mode. |
 
 ## Authentication requirements
 

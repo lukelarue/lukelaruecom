@@ -1,12 +1,13 @@
 # Web Frontend
 
-This package (`apps/web/`) contains the LukeLaRue gaming platform UI built with Vite, React, and TypeScript. The app can run fully mocked for design work or connect to the login and chat backends for end-to-end flows.
+This package (`apps/web/`) contains the LukeLaRue gaming platform UI built with Vite, React, and TypeScript. The app can run fully mocked for design work or connect to the login and chat backends for end-to-end flows. Repository-wide setup steps live in the root `README.md`.
 
 ## Prerequisites
 
 - Node.js 22 or newer (matching the workspace `engines` field)
 - npm 10+
 - Optional: running instances of the login API (`http://localhost:4000`) and chat API (`http://localhost:4100`) when exercising backend-backed features
+- Dependencies installed via `npm install` at the repo root (covers this workspace)
 
 ## Environment configuration
 
@@ -33,11 +34,12 @@ Both commands serve the app at `http://localhost:5173`. When the chat service is
 | `npm run dev:mock` | Launches Vite with mocked auth flows. |
 | `npm run dev:backend` | Launches Vite with backend-auth mode (requires login API). |
 | `npm run build` | Type-checks and emits production assets into `dist/`. |
-| `npm run preview` | Serves the production build locally for smoke testing. |
+| `npm run preview` | Serves the production build for smoke testing. |
+| `npm run test` | Executes the Vitest unit suite once (same as `test:unit`). |
 | `npm run lint` | Runs ESLint across `src/`. |
-| `npm run test` | Executes Vitest in watch mode; append `-- --run` for single-run. |
+| `npm run test:watch` | Executes Vitest in watch mode; append `-- --run` for single-run. |
 
-## Folder highlights
+## Folder Highlights
 
 - `src/components/` – Shared UI components (buttons, layout, chat widgets).
 - `src/pages/` – Route-level screens such as the landing page and lobby.
