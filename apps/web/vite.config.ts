@@ -21,6 +21,12 @@ export default defineConfig({
         changeOrigin: true,
         secure: false,
       },
+      '/chat-api': {
+        target: 'http://localhost:4100',
+        changeOrigin: true,
+        secure: false,
+        rewrite: (path) => path.replace(/^\/chat-api/, ''),
+      },
     },
   },
 });
