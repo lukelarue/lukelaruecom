@@ -10,7 +10,11 @@
     "preview": "vite preview",
     "lint": "eslint src --ext .ts,.tsx",
     "format": "prettier --write .",
-    "test": "vitest"
+    "test": "vitest run --config vitest.unit.config.ts",
+    "test:unit": "vitest run --config vitest.unit.config.ts",
+    "test:watch": "vitest --config vitest.unit.config.ts --watch",
+    "test:integration": "vitest run --config vitest.integration.config.ts",
+    "test:integration:watch": "vitest --config vitest.integration.config.ts --watch"
   },
   "dependencies": {
     "@react-oauth/google": "^0.12.1",

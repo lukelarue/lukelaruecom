@@ -3,10 +3,10 @@ import type { Express } from 'express';
 import request from 'supertest';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
-import type { CreateApp } from '../app';
-import type { Config } from '../config';
-import type { GetFirestore } from '../lib/firestore';
-import type { UserProfile } from '../types';
+import type { CreateApp } from '../../app';
+import type { Config } from '../../config';
+import type { GetFirestore } from '../../lib/firestore';
+import type { UserProfile } from '../../types';
 
 const TEST_USER_ID = 'integration-user-123';
 const USERS_COLLECTION = 'users';
@@ -42,9 +42,9 @@ beforeAll(async () => {
   process.env.USE_FIRESTORE_EMULATOR = 'true';
   process.env.FIRESTORE_EMULATOR_HOST = process.env.FIRESTORE_EMULATOR_HOST ?? 'localhost:8080';
 
-  ({ getFirestore } = await import('../lib/firestore'));
-  ({ config } = await import('../config'));
-  ({ createApp } = await import('../app'));
+  ({ getFirestore } = await import('../../lib/firestore'));
+  ({ config } = await import('../../config'));
+  ({ createApp } = await import('../../app'));
 
   firestore = getFirestore();
   app = createApp();

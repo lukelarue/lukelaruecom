@@ -60,7 +60,7 @@ describe('loginWithGoogle', () => {
     process.env.GCP_PROJECT_ID = 'demo-firestore';
     process.env.GOOGLE_CLIENT_ID = 'fake-google-client-id';
 
-    ({ loginWithGoogle } = await import('../authController'));
+    ({ loginWithGoogle } = await import('../../controllers/authController'));
     ({ config } = await import('../../config'));
   });
 
@@ -189,7 +189,7 @@ describe('getSession', () => {
     process.env.SESSION_JWT_SECRET = 'test-secret';
     process.env.GCP_PROJECT_ID = 'demo-firestore';
 
-    ({ getSession } = await import('../authController'));
+    ({ getSession } = await import('../../controllers/authController'));
     ({ config } = await import('../../config'));
   });
 
@@ -318,7 +318,7 @@ describe('signOut', () => {
   let config: Config;
 
   beforeAll(async () => {
-    ({ signOut } = await import('../authController'));
+    ({ signOut } = await import('../../controllers/authController'));
     ({ config } = await import('../../config'));
   });
 

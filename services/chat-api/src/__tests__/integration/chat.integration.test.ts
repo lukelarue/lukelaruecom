@@ -3,8 +3,8 @@ import type { Express } from 'express';
 import request from 'supertest';
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type { MessageStoreContract } from '../services/messageStore';
-import type { ChatMessageRecord } from '../types/chat';
+import type { MessageStoreContract } from '../../services/messageStore';
+import type { ChatMessageRecord } from '../../types/chat';
 
 const CHAT_MESSAGES_COLLECTION = 'chatMessages';
 
@@ -38,11 +38,11 @@ describe('chat api integration (offline)', () => {
     process.env.USE_FIRESTORE_EMULATOR = 'true';
     process.env.FIRESTORE_EMULATOR_HOST = process.env.FIRESTORE_EMULATOR_HOST ?? 'localhost:8080';
 
-    const firestoreModule = await import('../lib/firestore');
+    const firestoreModule = await import('../../lib/firestore');
     firestore = firestoreModule.getFirestore();
 
-    const { MessageStore } = await import('../services/messageStore');
-    const { createApp } = await import('../app');
+    const { MessageStore } = await import('../../services/messageStore');
+    const { createApp } = await import('../../app');
 
     messageStore = new MessageStore({ firestore });
     app = createApp({ messageStore });

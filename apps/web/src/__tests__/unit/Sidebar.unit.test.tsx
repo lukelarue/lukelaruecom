@@ -1,6 +1,6 @@
 import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { Sidebar } from './Sidebar';
+import { Sidebar } from '@/components/Sidebar/Sidebar';
 import { renderWithRouter } from '@/test/test-utils';
 import { AuthContext, type AuthContextValue } from '@/context/AuthContext';
 import { vi, describe, it, expect } from 'vitest';

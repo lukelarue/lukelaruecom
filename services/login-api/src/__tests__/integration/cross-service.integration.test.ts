@@ -3,7 +3,7 @@ import type { Express } from 'express';
 import request from 'supertest';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
-import type { UserProfile } from '../types';
+import type { UserProfile } from '../../types';
 
 const USERS_COLLECTION = 'users';
 const CHAT_MESSAGES_COLLECTION = 'chatMessages';
@@ -42,14 +42,14 @@ describe('cross-service contract', () => {
     process.env.FIRESTORE_EMULATOR_HOST = process.env.FIRESTORE_EMULATOR_HOST ?? 'localhost:8080';
     process.env.GCP_PROJECT_ID = 'demo-firestore';
 
-    const { getFirestore } = await import('../lib/firestore');
-    const { createApp: createLoginApp } = await import('../app');
+    const { getFirestore } = await import('../../lib/firestore');
+    const { createApp: createLoginApp } = await import('../../app');
 
     firestore = getFirestore();
     loginApp = createLoginApp();
 
-    const messageStoreModule = await import(new URL('../../../chat-api/src/services/messageStore.ts', import.meta.url).href);
-    const chatAppModule = await import(new URL('../../../chat-api/src/app.ts', import.meta.url).href);
+    const messageStoreModule = await import(new URL('../../../../chat-api/src/services/messageStore.ts', import.meta.url).href);
+    const chatAppModule = await import(new URL('../../../../chat-api/src/app.ts', import.meta.url).href);
 
     const MessageStoreClass = messageStoreModule.MessageStore as new (deps: { firestore: Firestore }) => {
       saveMessage: (...args: unknown[]) => Promise<unknown>;

@@ -2,10 +2,10 @@ import { randomUUID } from 'node:crypto';
 import request from 'supertest';
 import { describe, expect, it, beforeEach } from 'vitest';
 
-import { createApp } from '../app';
-import type { MessageStoreContract } from '../services/messageStore';
-import type { ChannelDescriptor, ChatMessageRecord, ChatMessagePayload } from '../types/chat';
-import { buildChannelMetadata, resolveChannelId } from '../utils/channel';
+import { createApp } from '../../app';
+import type { MessageStoreContract } from '../../services/messageStore';
+import type { ChannelDescriptor, ChatMessageRecord, ChatMessagePayload } from '../../types/chat';
+import { buildChannelMetadata, resolveChannelId } from '../../utils/channel';
 
 class InMemoryMessageStore implements MessageStoreContract {
   private records: ChatMessageRecord[] = [];

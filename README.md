@@ -71,10 +71,16 @@ This repository contains a full-stack web platform prototype for a gaming websit
   - `dev:web:backend` talks to the login API proxy at `http://localhost:4000` (serve UI on `http://localhost:5173`). Keep frontend and backend in separate terminals.
 - **Unit tests**
   ```bash
-  npm run test --workspace apps/web -- --run --reporter=dot
-  npm run test --workspace apps/web
+  npm run test:unit --workspace apps/web
+  npm run test:watch --workspace apps/web
   ```
-  - Run-once versus watch mode (press `q` to exit watch).
+  - Run-once versus watch mode for files under `src/__tests__/unit/`.
+- **Integration tests**
+  ```bash
+  npm run test:integration --workspace apps/web
+  npm run test:integration:watch --workspace apps/web
+  ```
+  - Covers scenarios in `src/__tests__/integration/` that exercise the app with mocked services.
 - **Linting**
   ```bash
   npm run lint --workspace apps/web
@@ -89,13 +95,18 @@ This repository contains a full-stack web platform prototype for a gaming websit
   ```
   - Boots the Firestore emulator (`localhost:8080`), emulator UI (`http://localhost:4001`), and login API (`http://localhost:4000`).
   - When running alongside other services, prefer the root `npm run dev:backend` (or `npm run dev:stack`) so the emulator is started only once.
-- **Unit & integration tests**
+- **Unit tests**
   ```bash
-  npm test --workspace services/login-api
+  npm run test:unit --workspace services/login-api
   npm run test:watch --workspace services/login-api
-  npm run test:integration --workspace services/login-api
   ```
-  - Ensure `USE_FIRESTORE_EMULATOR=true` and `USE_FAKE_GOOGLE_AUTH=true` in `.env` for integration tests. Start the Firestore emulator separately when you only need it:
+  - Executes `src/__tests__/unit/**/*.unit.test.ts` with mocked dependencies.
+- **Integration tests**
+  ```bash
+  npm run test:integration --workspace services/login-api
+  npm run test:integration:watch --workspace services/login-api
+  ```
+  - Runs emulator-backed suites in `src/__tests__/integration/**/*.integration.test.ts`, including cross-service contracts. Ensure `USE_FIRESTORE_EMULATOR=true` and `USE_FAKE_GOOGLE_AUTH=true` in `.env`. Start the Firestore emulator separately when you only need it:
     ```bash
     npm run dev:emulator --workspace services/login-api
     ```
@@ -120,11 +131,15 @@ This repository contains a full-stack web platform prototype for a gaming websit
 - **Unit tests**
   ```bash
   npm run test:unit --workspace services/chat-api
+  npm run test:watch --workspace services/chat-api
   ```
+  - Targets `src/__tests__/unit/**/*.unit.test.ts` via `vitest.unit.config.ts`.
 - **Integration tests**
   ```bash
   npm run test:integration --workspace services/chat-api
+  npm run test:integration:watch --workspace services/chat-api
   ```
+  - Uses `src/__tests__/integration/**/*.integration.test.ts` with the Firestore emulator.
 - **Linting**
   ```bash
   npm run lint --workspace services/chat-api
