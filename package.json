@@ -12,18 +12,27 @@
     "node": ">=22 <23"
   },
   "scripts": {
-    "dev:web": "npm --workspace apps/web run dev",
-    "dev:web:mock": "npm --workspace apps/web run dev:mock",
-    "dev:web:backend": "npm --workspace apps/web run dev:backend",
-    "dev:login-api": "npm --workspace services/login-api run dev",
-    "dev:firebase": "npm run dev:emulator --workspace services/login-api",
-    "dev:login-only": "npm run dev:login-api --workspace services/login-api",
-    "dev:chat-only": "npm run dev:chat-api --workspace services/chat-api",
-    "dev:backend": "npx npm-run-all --parallel dev:firebase dev:login-only dev:chat-only",
-    "dev:stack": "npx npm-run-all --parallel dev:backend dev:web:backend",
+    "dev:frontend:mock": "npm --workspace apps/web run dev:mock",
+    "dev:frontend:backend": "npm --workspace apps/web run dev:backend",
+    "dev:login": "npm --workspace services/login-api run dev",
+    "dev:login:api": "npm --workspace services/login-api run dev:login-api",
+    "dev:chat": "npm --workspace services/chat-api run dev",
+    "dev:chat:api": "npm --workspace services/chat-api run dev:chat-api",
+    "dev:firestore": "npm --workspace services/login-api run dev:emulator",
+    "dev:backend": "npx npm-run-all --parallel dev:firestore dev:login:api dev:chat:api",
+    "dev:stack": "npx npm-run-all --parallel dev:backend dev:frontend:backend",
     "build": "npm run build --workspaces",
     "lint": "npm run lint --workspaces",
     "format": "npm run format --workspaces",
-    "test": "npm run test --workspaces"
+    "test:unit:frontend": "npm --workspace apps/web run test:unit",
+    "test:unit:login": "npm --workspace services/login-api run test:unit",
+    "test:unit:chat": "npm --workspace services/chat-api run test:unit",
+    "test:unit": "npx npm-run-all test:unit:frontend test:unit:login test:unit:chat",
+    "test:integration:frontend": "npm --workspace apps/web run test:integration",
+    "test:integration:login": "npm --workspace services/login-api run test:integration",
+    "test:integration:chat": "npm --workspace services/chat-api run test:integration",
+    "test:integration": "npx npm-run-all test:integration:frontend test:integration:login test:integration:chat",
+    "test:all": "npx npm-run-all test:unit test:integration",
+    "test": "npm run test:all"
   }
 }

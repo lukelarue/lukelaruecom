@@ -32,17 +32,19 @@ Copy `.env.example.login-api` to `.env` and adjust values for your environment.
   ```
 - **Run with emulator**
   ```bash
-  npm run dev --workspace services/login-api
+  npm run dev:login
   ```
-  Boots the Firestore emulator, emulator UI, and the API on `http://localhost:4000`.
+  Boots the Firestore emulator, emulator UI, and the API on `http://localhost:4000`. Equivalent workspace command: `npm run dev --workspace services/login-api`.
 - **Build**
   ```bash
   npm run build --workspace services/login-api
   ```
 - **Tests**
   ```bash
-  npm test --workspace services/login-api
-  npm run test:integration --workspace services/login-api
+  npm run test:unit:login
+  npm run test:integration:login
+  npm run test:watch --workspace services/login-api
+  npm run test:integration:watch --workspace services/login-api
   ```
 
 ## Authentication workflow

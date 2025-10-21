@@ -55,20 +55,56 @@ This repository contains a full-stack web platform prototype for a gaming websit
 
 ### Unified development commands
 
+- `npm run dev:frontend:mock`
+  - Boots the frontend UI in mock auth mode with no backend dependencies.
+- `npm run dev:frontend:backend`
+  - Boots the frontend UI in backend-auth mode, proxying to the login API configured in `apps/web/.env`.
+- `npm run dev:login`
+  - Starts the login API with its Firestore emulator.
+- `npm run dev:chat`
+  - Starts the chat API with its Firestore emulator.
+- `npm run dev:firestore`
+  - Starts only the shared Firestore emulator for service integration tests.
 - `npm run dev:backend`
-  - Boots the shared Firestore emulator/UI once, then starts the login API (`http://localhost:4000`) and chat API (`http://localhost:4100`).
+  - Boots the shared Firestore emulator once, then starts the login and chat APIs.
 - `npm run dev:stack`
-  - Runs `dev:backend` plus the frontend in backend mode (`http://localhost:5173`).
+  - Runs `dev:backend` plus the backend-auth frontend for a full local stack.
+
+### Unified test commands
+
+- `npm run test:unit:frontend`
+  - Executes the frontend unit test suite via Vitest.
+- `npm run test:unit:login`
+  - Executes the login API unit test suite.
+- `npm run test:unit:chat`
+  - Executes the chat API unit test suite.
+- `npm run test:unit`
+  - Runs all unit tests sequentially across workspaces.
+- `npm run test:integration:frontend`
+  - Executes the frontend integration test suite.
+- `npm run test:integration:login`
+  - Executes the login API integration test suite.
+- `npm run test:integration:chat`
+  - Executes the chat API integration test suite.
+- `npm run test:integration`
+  - Runs all integration tests sequentially across workspaces.
+- `npm run test:all`
+  - Runs all unit and integration tests.
+
+### Unified linting command
+
+- `npm run lint`
+  - Runs ESLint in each workspace.
 
 ### Frontend UI (`apps/web/`)
 
 - **Dev servers**
   ```bash
-  npm run dev:web:mock
-  npm run dev:web:backend
+  npm run dev:frontend:mock
+  npm run dev:frontend:backend
   ```
-  - `dev:web:mock` launches Vite in `frontend-mock` mode with no backend dependency.
-  - `dev:web:backend` talks to the login API proxy at `http://localhost:4000` (serve UI on `http://localhost:5173`). Keep frontend and backend in separate terminals.
+  - `dev:frontend:mock` launches Vite in `frontend-mock` mode with no backend dependency.
+  - `dev:frontend:backend` serves the UI on `http://localhost:5173` and talks to the login API proxy at `http://localhost:4000`.
 - **Unit tests**
   ```bash
   npm run test:unit --workspace apps/web
@@ -91,10 +127,11 @@ This repository contains a full-stack web platform prototype for a gaming websit
 
 - **Dev servers**
   ```bash
-  npm run dev --workspace services/login-api
+  npm run dev:login
+  npm run dev:login:api
   ```
-  - Boots the Firestore emulator (`localhost:8080`), emulator UI (`http://localhost:4001`), and login API (`http://localhost:4000`).
-  - When running alongside other services, prefer the root `npm run dev:backend` (or `npm run dev:stack`) so the emulator is started only once.
+  - `dev:login` boots the Firestore emulator (`localhost:8080`), emulator UI (`http://localhost:4001`), and login API (`http://localhost:4000`).
+  - Use `dev:login:api` when another process already launched the emulator.
 - **Unit tests**
   ```bash
   npm run test:unit --workspace services/login-api
@@ -106,10 +143,10 @@ This repository contains a full-stack web platform prototype for a gaming websit
   npm run test:integration --workspace services/login-api
   npm run test:integration:watch --workspace services/login-api
   ```
-  - Runs emulator-backed suites in `src/__tests__/integration/**/*.integration.test.ts`, including cross-service contracts. Ensure `USE_FIRESTORE_EMULATOR=true` and `USE_FAKE_GOOGLE_AUTH=true` in `.env`. Start the Firestore emulator separately when you only need it:
+  - Runs emulator-backed suites in `src/__tests__/integration/**/*.integration.test.ts`. To only start the emulator:
     ```bash
-    npm run dev:emulator --workspace services/login-api
-    ```
+    npm run dev:firestore
+  ```
 - **Linting**
   ```bash
   npm run lint --workspace services/login-api
@@ -120,14 +157,11 @@ This repository contains a full-stack web platform prototype for a gaming websit
 
 - **Dev servers**
   ```bash
-  npm run dev --workspace services/chat-api
+  npm run dev:chat
+  npm run dev:chat:api
   ```
-  - Starts the chat API (`http://localhost:4100`) and Firestore emulator (`127.0.0.1:8080`). Set headers `x-user-id` and `x-user-name` when calling the API directly to simulate authenticated users.
-  - To avoid port collisions when another service already launched the emulator, start only the API with:
-    ```bash
-    npm run dev:chat-api --workspace services/chat-api
-    ```
-  - When the frontend cannot connect to this service, the UI displays "chat disabled" to signal the offline state.
+  - `dev:chat` starts the chat API (`http://localhost:4100`) and Firestore emulator (`127.0.0.1:8080`).
+  - Use `dev:chat:api` when an external process already launched the emulator.
 - **Unit tests**
   ```bash
   npm run test:unit --workspace services/chat-api
@@ -162,11 +196,9 @@ curl -i http://localhost:4000/auth/session -b cookies.txt
 curl -i -X POST http://localhost:4000/auth/signout -b cookies.txt
 ```
 
-### Environment tips
-
-- Avoid hard-coding `VITE_AUTH_MODE` in `apps/web/.env`; use the appropriate `npm run dev:web:*` command instead.
+- Avoid hard-coding `VITE_AUTH_MODE` in `apps/web/.env`; use the appropriate `npm run dev:frontend:*` command instead.
 - `.env.frontend-mock` and `.env.backend` offer per-mode overrides when needed.
-- For login-API-only debugging, run `npm run dev:emulator --workspace services/login-api` to keep the Firestore emulator up without the server.
+- For login-API-only debugging, run `npm run dev:firestore` to keep the Firestore emulator up without the server.
 
 ## Application Routes
 

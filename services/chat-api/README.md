@@ -28,12 +28,12 @@ Copy `.env.example.chat-api` to `.env` to start with local defaults.
   ```
 - **Run with emulator**
   ```bash
-  npm run dev --workspace services/chat-api
+  npm run dev:chat
   ```
-  Starts the Firestore emulator and the API at `http://localhost:4100`.
+  Starts the Firestore emulator and the API at `http://localhost:4100`. Equivalent workspace command: `npm run dev --workspace services/chat-api`.
 - **Run API only** (when emulator already running)
   ```bash
-  npm run dev:chat-api --workspace services/chat-api
+  npm run dev:chat:api
   ```
 - **Build**
   ```bash
@@ -41,8 +41,10 @@ Copy `.env.example.chat-api` to `.env` to start with local defaults.
   ```
 - **Tests**
   ```bash
-  npm run test:unit --workspace services/chat-api
-  npm run test:integration --workspace services/chat-api
+  npm run test:unit:chat
+  npm run test:integration:chat
+  npm run test:watch --workspace services/chat-api
+  npm run test:integration:watch --workspace services/chat-api
   ```
 
 ## Authentication requirements
