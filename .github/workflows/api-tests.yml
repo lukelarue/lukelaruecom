@@ -7,6 +7,12 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        service:
+          - services/login-api
+          - services/chat-api
 
     steps:
       - uses: actions/checkout@v4
@@ -21,11 +27,11 @@ jobs:
       - name: Install dependencies
         run: npm ci --include=dev
 
-      - name: Lint login API workspace
-        run: npm run lint --workspace services/login-api
+      - name: Lint API workspace
+        run: npm run lint --workspace ${{ matrix.service }}
 
       - name: Run unit tests
-        run: npm run test --workspace services/login-api
+        run: npm run test:unit --workspace ${{ matrix.service }}
 
       - name: Run integration tests with Firestore emulator
-        run: npx firebase emulators:exec --only firestore "npm run test:integration --workspace services/login-api"
+        run: npx firebase emulators:exec --only firestore "npm run test:integration --workspace ${{ matrix.service }}"

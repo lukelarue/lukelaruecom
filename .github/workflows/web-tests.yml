@@ -25,4 +25,7 @@ jobs:
         run: npm run lint --workspace apps/web
 
       - name: Run frontend unit tests
-        run: npm run test --workspace apps/web -- --run --reporter=dot
+        run: npm run test:unit --workspace apps/web
+
+      - name: Run frontend integration tests
+        run: npm run test:integration --workspace apps/web
