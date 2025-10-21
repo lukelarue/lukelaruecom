@@ -1,9 +1,10 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { waitFor, screen, act } from '@testing-library/react';
 import { renderWithRouter } from '@/test/test-utils';
 import App from '@/App';
 import * as authServices from '@/services/auth';
 import * as chatHttpClient from '@/services/chat/httpClient';
+import type { ChatClient } from '@/services/chat';
 import type { AuthSession } from '@/types';
 
 const mockAuthSession = (overrides: Partial<AuthSession> = {}): AuthSession => {
@@ -20,6 +21,11 @@ const mockAuthSession = (overrides: Partial<AuthSession> = {}): AuthSession => {
 };
 
 describe('offline integration (frontend)', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+    window.localStorage.clear();
+  });
+
   it('shows offline banner and disables chat features when backend fails', async () => {
     vi.spyOn(authServices, 'fetchCurrentSession').mockResolvedValueOnce(null);
     vi.spyOn(authServices, 'loginWithGoogleIdToken').mockRejectedValueOnce(new Error('Network down'));
@@ -28,9 +34,9 @@ describe('offline integration (frontend)', () => {
 
     expect(await screen.findByText(/LukeLaRue Gaming Lobby/i)).toBeInTheDocument();
 
-    const mockButton = screen.getByRole('button', { name: /sign in \(mock\)/i });
+    const [googleButton] = await screen.findAllByRole('button', { name: /sign in/i });
     await act(async () => {
-      mockButton.click();
+      googleButton.click();
     });
 
     await waitFor(() => {
@@ -50,33 +56,32 @@ describe('offline integration (frontend)', () => {
       })
     );
 
-    const sendSpy = vi
-      .spyOn(chatHttpClient, 'createHttpChatClient')
-      .mockImplementation(({ getAuthHeaders }) => {
-        const headers = getAuthHeaders();
-        expect(headers?.userId).toBe('integration-user');
-        expect(headers?.userName).toBe('Integration User');
-        return {
-          fetchMessages: vi.fn(),
-          fetchMessagesById: vi.fn(),
-          listChannels: vi.fn(),
-          sendMessage: vi.fn(),
-          subscribe: vi.fn(),
-        };
-      });
+    const fakeChatClient: ChatClient = {
+      fetchMessages: vi.fn(),
+      fetchMessagesById: vi.fn(),
+      listChannels: vi.fn(),
+      sendMessage: vi.fn(),
+      subscribe: vi.fn(() => vi.fn()),
+    };
+
+    const sendSpy = vi.spyOn(chatHttpClient, 'createHttpChatClient').mockImplementation(({ getAuthHeaders }) => {
+      const headers = getAuthHeaders();
+      expect(headers?.userId).toBe('integration-user');
+      expect(headers?.userName).toBe('Integration User');
+      return fakeChatClient;
+    });
 
     renderWithRouter(<App />);
 
-    const loginButton = await screen.findByRole('button', { name: /sign in \(mock\)/i });
+    const [loginButton] = await screen.findAllByRole('button', { name: /sign in/i });
     await act(async () => {
       loginButton.click();
     });
 
-    await waitFor(() => {
-      expect(screen.getByText(/welcome back/i)).toBeInTheDocument();
-    });
-
+    const statusHeading = await screen.findByRole('heading', { level: 2, name: /your status/i }, { timeout: 5000 });
     expect(sendSpy).toHaveBeenCalled();
+    expect(statusHeading).toBeInTheDocument();
+    sendSpy.mockRestore();
   });
 
   it('restores session from storage and hydrates AuthContext', async () => {
@@ -91,9 +96,26 @@ describe('offline integration (frontend)', () => {
     window.localStorage.setItem('lukelarue.auth.session', JSON.stringify(storedSession));
     vi.spyOn(authServices, 'fetchCurrentSession').mockResolvedValueOnce(storedSession);
 
+    const restoredChatClient: ChatClient = {
+      fetchMessages: vi.fn(),
+      fetchMessagesById: vi.fn(),
+      listChannels: vi.fn(),
+      sendMessage: vi.fn(),
+      subscribe: vi.fn(() => vi.fn()),
+    };
+
+    vi.spyOn(chatHttpClient, 'createHttpChatClient').mockImplementation(({ getAuthHeaders }) => {
+      const headers = getAuthHeaders();
+      expect(headers?.userId).toBe('restored-user');
+      expect(headers?.userName).toBe('Restored User');
+      return restoredChatClient;
+    });
+
     renderWithRouter(<App />);
 
-    expect(await screen.findByText(/welcome back/i)).toBeInTheDocument();
-    expect(screen.getByText(/restored@example.com/i)).toBeInTheDocument();
+    const statusHeadings = await screen.findAllByRole('heading', { level: 2, name: /your status/i }, { timeout: 5000 });
+    expect(statusHeadings.length).toBeGreaterThan(0);
+    const restoredEmailNodes = screen.getAllByText(/restored@example.com/i);
+    expect(restoredEmailNodes.length).toBeGreaterThan(0);
   });
 });

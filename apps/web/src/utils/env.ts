@@ -3,6 +3,10 @@ const chatApiBaseUrl = import.meta.env.VITE_CHAT_API_BASE_URL ?? '/chat-api';
 const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID ?? '';
 
 const resolveAuthMode = (): 'frontend-mock' | 'backend' => {
+  if (import.meta.env.VITEST) {
+    return 'backend';
+  }
+
   const modeHint = import.meta.env.MODE;
   if (modeHint === 'backend') {
     return 'backend';
