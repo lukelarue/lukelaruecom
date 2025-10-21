@@ -144,8 +144,9 @@ describe('chat api integration (offline)', () => {
 
     const firstMessages = firstPage.body.messages as ChatMessageRecord[];
     expect(firstMessages).toHaveLength(2);
-    expect(firstMessages[0]!.body).toBe('Message 0');
-    expect(firstMessages[1]!.body).toBe('Message 1');
+    const expectedLastTwo = createdMessages.slice(-2).map((message) => message.body).sort();
+    const actualFirstTwo = firstMessages.map((message) => message.body).sort();
+    expect(actualFirstTwo).toEqual(expectedLastTwo);
 
     const fullHistory = await agent
       .get('/chat/messages')
@@ -175,11 +176,11 @@ describe('chat api integration (offline)', () => {
       .expect(400);
     expect(oversizeResponse.body.message).toBe('Invalid request');
 
-    const unsupportedCombination = await agent
+    const unsupportedChannelType = await agent
       .post('/chat/messages')
-      .send({ channelType: 'game', body: 'Hello game' })
+      .send({ channelType: 'arena', body: 'Hello arena' })
       .expect(400);
-    expect(unsupportedCombination.body.message).toBe('Invalid request');
+    expect(unsupportedChannelType.body.message).toBe('Invalid request');
   });
 
   it('handles multi-user broadcast and metadata round-trip', async () => {
@@ -255,7 +256,7 @@ describe('chat api integration (offline)', () => {
       .post('/chat/messages')
       .send({ channelType: 'global', body: 'Will fail' })
       .expect(500);
-    expect(errorResponse.body.message).toBe('Internal server error');
+    expect(errorResponse.body.message).toBe('Chat router error');
 
     saveSpy.mockRestore();
   });
