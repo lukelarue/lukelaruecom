@@ -10,7 +10,7 @@ This directory houses Terraform configuration for the LukeLaRue production infra
 
 ## Bootstrap Command
 
-Adjust names, region, and project as needed before running the commands.
+Adjust names, region, and project as needed before running the commands. Run these with an owner account; Terraform will provision the CI/CD service account on apply.
 
 ### Windows (PowerShell)
 
@@ -25,12 +25,6 @@ gcloud storage buckets create "gs://$BucketName" `
   --uniform-bucket-level-access
 
 gcloud storage buckets update "gs://$BucketName" --versioning
-
-$TerraformSa = "terraform-admin@$ProjectId.iam.gserviceaccount.com"
-
-gcloud storage buckets add-iam-policy-binding "gs://$BucketName" `
-  --member "serviceAccount:$TerraformSa" `
-  --role "roles/storage.admin"
 ```
 
 ### macOS / Linux (bash)
@@ -46,12 +40,6 @@ gcloud storage buckets create gs://${BUCKET_NAME} \
   --uniform-bucket-level-access
 
 gcloud storage buckets update gs://${BUCKET_NAME} --versioning
-
-TERRAFORM_SA="terraform-admin@${PROJECT_ID}.iam.gserviceaccount.com"
-
-gcloud storage buckets add-iam-policy-binding gs://${BUCKET_NAME} \
-  --member "serviceAccount:${TERRAFORM_SA}" \
-  --role "roles/storage.admin"
 ```
 
 ## Initialize Terraform
