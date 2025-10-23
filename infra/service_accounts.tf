@@ -1,21 +1,3 @@
-terraform {
-  required_version = ">= 1.5.0"
-  required_providers {
-    google = {
-      source  = "hashicorp/google"
-      version = "~> 5.33"
-    }
-  }
-}
-
-variable "project_id" {
-  type = string
-}
-
-provider "google" {
-  project = var.project_id
-}
-
 locals {
   login_api_roles = [
     "roles/datastore.user",
@@ -33,6 +15,16 @@ locals {
     "roles/run.admin",
     "roles/artifactregistry.writer"
   ]
+
+  terraform_admin_roles = [
+    "roles/compute.admin",
+    "roles/run.admin",
+    "roles/artifactregistry.admin",
+    "roles/datastore.admin",
+    "roles/secretmanager.admin",
+    "roles/storage.admin",
+    "roles/iam.serviceAccountAdmin"
+  ]
 }
 
 resource "google_service_account" "login_api" {
@@ -48,6 +40,11 @@ resource "google_service_account" "chat_api" {
 resource "google_service_account" "deploy_automation" {
   account_id   = "deploy-automation"
   display_name = "CI/CD deploy automation"
+}
+
+resource "google_service_account" "terraform" {
+  account_id   = "terraform-admin"
+  display_name = "Terraform infrastructure administrator"
 }
 
 resource "google_project_iam_member" "login_api_roles" {
@@ -74,6 +71,14 @@ resource "google_project_iam_member" "deploy_automation_roles" {
   member  = "serviceAccount:${google_service_account.deploy_automation.email}"
 }
 
+resource "google_project_iam_member" "terraform_admin_roles" {
+  for_each = toset(local.terraform_admin_roles)
+
+  project = var.project_id
+  role    = each.value
+  member  = "serviceAccount:${google_service_account.terraform.email}"
+}
+
 resource "google_service_account_iam_member" "deploy_can_use_login_runtime" {
   service_account_id = google_service_account.login_api.name
   role               = "roles/iam.serviceAccountUser"
@@ -96,4 +101,8 @@ output "chat_api_service_account_email" {
 
 output "deploy_automation_service_account_email" {
   value = google_service_account.deploy_automation.email
+}
+
+output "terraform_service_account_email" {
+  value = google_service_account.terraform.email
 }
