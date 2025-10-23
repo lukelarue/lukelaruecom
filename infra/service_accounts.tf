@@ -20,7 +20,7 @@ locals {
     "roles/compute.admin",
     "roles/run.admin",
     "roles/artifactregistry.admin",
-    "roles/datastore.admin",
+    "roles/datastore.owner",
     "roles/secretmanager.admin",
     "roles/storage.admin",
     "roles/iam.serviceAccountAdmin"
