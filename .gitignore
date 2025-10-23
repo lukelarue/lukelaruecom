@@ -24,6 +24,7 @@ logs
 .DS_Store
 
 # Terraform
+infra/.terraform/
 infra/terraform/**/.terraform/
 infra/terraform/**/.terraform.lock.hcl
 terraform.tfstate
