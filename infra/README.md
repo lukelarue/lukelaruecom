@@ -10,7 +10,30 @@ This directory houses Terraform configuration for the LukeLaRue production infra
 
 ## Bootstrap Command
 
-Create state bucket and enable versioning (adjust names, region, and project as needed):
+Adjust names, region, and project as needed before running the commands.
+
+### Windows (PowerShell)
+
+```powershell
+$ProjectId = "parabolic-env-456611-q9"
+$BucketName = "lukelarue-terraform-state"
+$BucketLocation = "us-central1"
+
+gcloud storage buckets create "gs://$BucketName" `
+  --project "$ProjectId" `
+  --location "$BucketLocation" `
+  --uniform-bucket-level-access
+
+gcloud storage buckets update "gs://$BucketName" --versioning
+
+$TerraformSa = "terraform-admin@$ProjectId.iam.gserviceaccount.com"
+
+gcloud storage buckets add-iam-policy-binding "gs://$BucketName" `
+  --member "serviceAccount:$TerraformSa" `
+  --role "roles/storage.admin"
+```
+
+### macOS / Linux (bash)
 
 ```bash
 PROJECT_ID="parabolic-env-456611-q9"
@@ -23,11 +46,7 @@ gcloud storage buckets create gs://${BUCKET_NAME} \
   --uniform-bucket-level-access
 
 gcloud storage buckets update gs://${BUCKET_NAME} --versioning
-```
 
-Grant the Terraform service account permissions on the bucket:
-
-```bash
 TERRAFORM_SA="terraform-admin@${PROJECT_ID}.iam.gserviceaccount.com"
 
 gcloud storage buckets add-iam-policy-binding gs://${BUCKET_NAME} \
