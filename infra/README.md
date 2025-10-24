@@ -2,6 +2,65 @@
 
 This directory houses Terraform configuration for the LukeLaRue production environment powering `lukelarue.com`.
 
+## Bootstrap & State Setup
+
+### Prerequisites
+- **Google Cloud project** Configure `gcloud` with owner-level credentials.
+- **Terraform >= 1.5.0** Installed locally or in CI.
+- **State bucket** A GCS bucket (example: `lukelarue-terraform-state`) for Terraform state with versioning enabled.
+
+### Create State Bucket
+Adjust names, region, and project as needed before running the commands. Execute with an owner account; Terraform will provision the CI/CD service account during apply.
+
+#### Windows (PowerShell)
+```powershell
+$ProjectId = "parabolic-env-456611-q9"
+$BucketName = "lukelarue-terraform-state"
+$BucketLocation = "us-central1"
+
+gcloud storage buckets create "gs://$BucketName" `
+  --project "$ProjectId" `
+  --location "$BucketLocation" `
+  --uniform-bucket-level-access
+
+gcloud storage buckets update "gs://$BucketName" --versioning
+```
+
+#### macOS / Linux (bash)
+```bash
+PROJECT_ID="parabolic-env-456611-q9"
+BUCKET_NAME="lukelarue-terraform-state"
+BUCKET_LOCATION="us-central1"
+
+gcloud storage buckets create gs://${BUCKET_NAME} \
+  --project "${PROJECT_ID}" \
+  --location "${BUCKET_LOCATION}" \
+  --uniform-bucket-level-access
+
+gcloud storage buckets update gs://${BUCKET_NAME} --versioning
+```
+
+### Initialize Terraform
+After creating the bucket and updating `backend.tf` with the correct bucket name and prefix, run the initial Terraform setup from the `infra/` directory:
+
+```bash
+terraform init
+```
+
+## Local Terraform Checks (CI Parity)
+
+The `terraform-checks` GitHub Actions workflow runs formatting, linting, validation, and drift detection. Mirror those steps locally from the `infra/` directory:
+
+```bash
+terraform fmt -check -recursive
+tflint --init          # installs configured plugins (first run only)
+tflint --recursive
+terraform validate -no-color
+terraform plan -detailed-exitcode -no-color   # optional drift detection
+```
+
+> Ensure you are authenticated to Google Cloud (`gcloud auth application-default login` or Workload Identity Federation) so `terraform plan` can access remote state and project resources.
+
 ## Architecture Overview
 - **Frontend** Static assets from the Vite build are uploaded to a Cloud Storage bucket and served via Cloud CDN behind a HTTPS load balancer. Cloudflare proxies the public domain and routes traffic to the Google endpoint.
 - **Login API** (`services/login-api`) runs on Cloud Run, handles Google sign-in, session cookies, and persists user profiles to Firestore.
@@ -47,55 +106,3 @@ flowchart LR
 - **`backend.tf`** Configures remote state (GCS bucket + prefix) and providers.
 - **`main.tf` / modules** Define Firestore, Cloud Run services, Artifact Registry, Cloud CDN load balancer, service accounts, secrets, and DNS records.
 - **`variables.tf` / `outputs.tf`** Capture customizable project IDs, regions, bucket names, and important endpoints.
-
-## Bootstrap & State Setup
-
-### Prerequisites
-- **Google Cloud project** Configure `gcloud` with owner-level credentials.
-- **Terraform >= 1.5.0** Installed locally or in CI.
-- **State bucket** A GCS bucket (example: `lukelarue-terraform-state`) for Terraform state with versioning enabled.
-
-### Create State Bucket
-Adjust names, region, and project as needed before running the commands. Execute with an owner account; Terraform will provision the CI/CD service account during apply.
-
-#### Windows (PowerShell)
-```powershell
-$ProjectId = "parabolic-env-456611-q9"
-$BucketName = "lukelarue-terraform-state"
-$BucketLocation = "us-central1"
-
-gcloud storage buckets create "gs://$BucketName" `
-  --project "$ProjectId" `
-  --location "$BucketLocation" `
-  --uniform-bucket-level-access
-
-gcloud storage buckets update "gs://$BucketName" --versioning
-```
-
-#### macOS / Linux (bash)
-```bash
-PROJECT_ID="parabolic-env-456611-q9"
-BUCKET_NAME="lukelarue-terraform-state"
-BUCKET_LOCATION="us-central1"
-
-gcloud storage buckets create gs://${BUCKET_NAME} \
-  --project "${PROJECT_ID}" \
-  --location "${BUCKET_LOCATION}" \
-  --uniform-bucket-level-access
-
-gcloud storage buckets update gs://${BUCKET_NAME} --versioning
-```
-
-### Initialize Terraform
-After creating the bucket and updating `backend.tf` with the correct bucket name and prefix, run:
-
-```bash
-terraform init
-```
-
-Then follow with optional validation:
-
-```bash
-terraform fmt
-terraform validate
-```
