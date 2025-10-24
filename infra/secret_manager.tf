@@ -24,7 +24,7 @@ locals {
 resource "google_secret_manager_secret" "managed" {
   for_each = local.secret_manager_secrets
 
-  secret_id   = each.key
+  secret_id = each.key
 
   replication {
     auto {}
