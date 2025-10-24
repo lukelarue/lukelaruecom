@@ -41,7 +41,7 @@ flowchart LR
 - **Frontend ↔ Login API** `apps/web` uses `VITE_LOGIN_API_BASE_URL` to exchange Google credentials for session cookies via `POST /auth/google` and read sessions via `GET /auth/session`.
 - **Frontend ↔ Chat API** `apps/web` calls chat endpoints with `x-user-id` headers sourced from the authenticated session and reads/writes messages.
 - **APIs ↔ Firestore** Login API persists user profiles; Chat API stores channels and messages. Emulator flags are disabled in production via Terraform-managed environment variables.
-- **CI/CD** Builds Docker images from `services/login-api` and `services/chat-api` using the repository Dockerfiles, pushes to Artifact Registry, and triggers `gcloud run deploy`. Frontend deploy stage uploads `apps/web/dist` to the storage bucket and invalidates Cloud CDN caches.
+- **CI/CD** Builds Docker images from `services/login-api` and `services/chat-api` using the repository Dockerfiles, pushes to Artifact Registry, and triggers `gcloud run deploy`. Frontend deploy stage uploads `apps/web/dist` to the storage bucket and invalidates Cloud CDN caches. Terraform automation in GitHub Actions authenticates via workload identity federation (no JSON keys) to run format, lint, validate, and plan checks.
 
 ## Terraform Layout
 - **`backend.tf`** Configures remote state (GCS bucket + prefix) and providers.
