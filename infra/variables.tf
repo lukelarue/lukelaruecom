@@ -9,3 +9,9 @@ variable "github_repository" {
   type        = string
   default     = "lukelarue/lukelaruecom"
 }
+
+variable "firestore_location_id" {
+  description = "Firestore database location ID (e.g. nam5, us-central1)"
+  type        = string
+  default     = "nam5"
+}

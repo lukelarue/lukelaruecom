@@ -65,7 +65,7 @@ terraform plan -detailed-exitcode -no-color   # optional drift detection
 - **Frontend** Static assets from the Vite build are uploaded to a Cloud Storage bucket and served via Cloud CDN behind a HTTPS load balancer. Cloudflare proxies the public domain and routes traffic to the Google endpoint.
 - **Login API** (`services/login-api`) runs on Cloud Run, handles Google sign-in, session cookies, and persists user profiles to Firestore.
 - **Chat API** (`services/chat-api`) runs on Cloud Run, performs channel/message operations backed by Firestore.
-- **Firestore** Native-mode database shared by both APIs for auth profiles and chat data.
+- **Firestore** Native-mode database shared by both APIs for auth profiles and chat data. Provisioned via Terraform (`firestore.tf`) after enabling the Firestore API, with destroy protection enabled for safety.
 - **Secret Manager** Stores sensitive configuration (session JWT secret, OAuth client ID, etc.) injected into Cloud Run revisions.
 - **Artifact Registry & CI/CD** Host Docker images built from the repository; GitHub Actions (with Workload Identity) or Cloud Build deploy updated revisions.
 - **Cloudflare DNS** Remains authoritative for `lukelarue.com`, with records pointing to the Google HTTPS load balancer and Cloud Run custom domains.
@@ -104,5 +104,6 @@ flowchart LR
 
 ## Terraform Layout
 - **`backend.tf`** Configures remote state (GCS bucket + prefix) and providers.
-- **`main.tf` / modules** Define Firestore, Cloud Run services, Artifact Registry, Cloud CDN load balancer, service accounts, secrets, and DNS records.
+- **`firestore.tf`** Enables required services and provisions the default Firestore database with destroy protection.
+- **`main.tf` / modules** Define Cloud Run services, Artifact Registry, Cloud CDN load balancer, service accounts, secrets, and DNS records.
 - **`variables.tf` / `outputs.tf`** Capture customizable project IDs, regions, bucket names, and important endpoints.
