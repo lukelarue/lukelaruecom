@@ -106,4 +106,5 @@ flowchart LR
 - **`backend.tf`** Configures remote state (GCS bucket + prefix) and providers.
 - **`firestore.tf`** Enables required services and provisions the default Firestore database with destroy protection.
 - **`main.tf` / modules** Define Cloud Run services, Artifact Registry, Cloud CDN load balancer, service accounts, secrets, and DNS records.
+- **`artifact_registry.tf`** Creates Artifact Registry Docker repositories for the Login and Chat API images.
 - **`variables.tf` / `outputs.tf`** Capture customizable project IDs, regions, bucket names, and important endpoints.

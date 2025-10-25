@@ -10,6 +10,12 @@ variable "github_repository" {
   default     = "lukelarue/lukelaruecom"
 }
 
+variable "artifact_registry_location" {
+  description = "Region where Artifact Registry repositories are created"
+  type        = string
+  default     = "us-central1"
+}
+
 variable "firestore_location_id" {
   description = "Firestore database location ID (e.g. nam5, us-central1)"
   type        = string
