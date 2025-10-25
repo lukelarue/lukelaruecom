@@ -8,7 +8,7 @@ on:
       - 'services/chat-api/**'
       - 'package.json'
       - 'package-lock.json'
-      - '.github/workflows/api-deploy.yml'
+      - '.github/workflows/api-image-publish.yml'
   workflow_dispatch:
 
 permissions:
