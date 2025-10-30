@@ -38,33 +38,31 @@ jobs:
       - name: Run integration tests with Firestore emulator
         run: npx firebase emulators:exec --only firestore "npm run test:integration --workspace ${{ matrix.service }}"
 
-      # NOTE: Uncomment the Docker build + containerized test steps below once we want CI to
-      # execute the suite inside the production image for runtime parity.
-      # - name: Build production Docker image
-      #   run: |
-      #     docker build \
-      #       -f ${{ matrix.service }}/Dockerfile \
-      #       -t ${{ matrix.image }}:ci \
-      #       ${{ matrix.service }}
+      - name: Build production Docker image
+        run: |
+          docker build \
+            -f ${{ matrix.service }}/Dockerfile \
+            -t ${{ matrix.image }}:ci \
+            ${{ matrix.service }}
 
-      # - name: Build tester Docker image
-      #   run: |
-      #     docker build \
-      #       --target tester \
-      #       -f ${{ matrix.service }}/Dockerfile \
-      #       -t ${{ matrix.image }}:tester \
-      #       ${{ matrix.service }}
+      - name: Build tester Docker image
+        run: |
+          docker build \
+            --target tester \
+            -f ${{ matrix.service }}/Dockerfile \
+            -t ${{ matrix.image }}:tester \
+            ${{ matrix.service }}
 
-      # - name: Run unit tests inside Docker image
-      #   run: |
-      #     docker run --rm \
-      #       --entrypoint bash \
-      #       ${{ matrix.image }}:tester \
-      #       -lc "npm run test:unit"
+      - name: Run unit tests inside Docker image
+        run: |
+          docker run --rm \
+            --entrypoint bash \
+            ${{ matrix.image }}:tester \
+            -lc "npm run test:unit"
 
-      # - name: Run integration tests inside Docker image
-      #   run: |
-      #     docker run --rm \
-      #       --entrypoint bash \
-      #       ${{ matrix.image }}:tester \
-      #       -lc "npx firebase emulators:exec --only firestore 'npm run test:integration'"
+      - name: Run integration tests inside Docker image
+        run: |
+          docker run --rm \
+            --entrypoint bash \
+            ${{ matrix.image }}:tester \
+            -lc "npx firebase emulators:exec --only firestore 'npm run test:integration'"

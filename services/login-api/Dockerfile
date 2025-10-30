@@ -12,24 +12,22 @@ FROM node:22-bookworm-slim AS builder
 
 WORKDIR /app
 
-# TODO(later): install emulator prerequisites and copy test configs when running tests inside Docker
-# RUN apt-get update \
-#   && apt-get install -y --no-install-recommends openjdk-17-jre-headless \
-#   && rm -rf /var/lib/apt/lists/*
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends openjdk-17-jre-headless \
+  && rm -rf /var/lib/apt/lists/*
 
 COPY --from=deps /app/node_modules ./node_modules
 COPY package.json ./
 COPY tsconfig.json tsconfig.build.json ./
-# COPY vitest*.config.ts ./
-# COPY firebase.json ./
-# COPY .firebaserc ./
+COPY vitest*.config.ts ./
+COPY firebase.json ./
+COPY .firebaserc ./
 COPY src ./src
 
 RUN npm run build
 
-# NOTE: Uncomment the tester stage below when we want to run the Vitest suites inside Docker for parity with production runtime.
-# FROM builder AS tester
-# ENV NODE_ENV=test
+FROM builder AS tester
+ENV NODE_ENV=test
 # Default command kept empty so workflow can provide the test command
 
 # Prune dev dependencies for the production image

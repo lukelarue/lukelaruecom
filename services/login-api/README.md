@@ -42,6 +42,15 @@ Copy `.env.example.login-api` to `.env` and adjust values for your environment.
 | `npm --workspace services/login-api run test:watch` | Run unit tests in watch mode. |
 | `npm --workspace services/login-api run test:integration:watch` | Run integration tests in watch mode. |
 
+### Docker-based testing
+
+| Command | Description |
+| --- | --- |
+| `docker build -f services/login-api/Dockerfile -t login-api:local services/login-api` | Build the production image that Cloud Run will run. |
+| `docker build --target tester -f services/login-api/Dockerfile -t login-api:tester services/login-api` | Build the tester image with dev tools (Vitest, Firebase emulator prerequisites). |
+| `docker run --rm --entrypoint bash login-api:tester -lc "npm run test:unit"` | Execute the unit suite inside the tester image. |
+| `docker run --rm --entrypoint bash login-api:tester -lc "npx firebase emulators:exec --only firestore 'npm run test:integration'"` | Launch the Firestore emulator inside the container and run integration tests against it. |
+
 ## Authentication workflow
 
 1. Clients call `POST /auth/google` with a Google ID token (or fake credential) to establish a session.

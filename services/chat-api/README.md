@@ -38,6 +38,15 @@ Copy `.env.example.chat-api` to `.env` to start with local defaults.
 | `npm --workspace services/chat-api run test:watch` | Run unit tests in watch mode. |
 | `npm --workspace services/chat-api run test:integration:watch` | Run integration tests in watch mode. |
 
+### Docker-based testing
+
+| Command | Description |
+| --- | --- |
+| `docker build -f services/chat-api/Dockerfile -t chat-api:local services/chat-api` | Build the production image deployed to Cloud Run. |
+| `docker build --target tester -f services/chat-api/Dockerfile -t chat-api:tester services/chat-api` | Build the tester image with Vitest and emulator prerequisites. |
+| `docker run --rm --entrypoint bash chat-api:tester -lc "npm run test:unit"` | Execute the unit suite inside the tester image. |
+| `docker run --rm --entrypoint bash chat-api:tester -lc "npx firebase emulators:exec --only firestore 'npm run test:integration'"` | Run integration tests against an emulator inside the container. |
+
 ## Authentication requirements
 
 All chat routes sit behind middleware that expects headers:
