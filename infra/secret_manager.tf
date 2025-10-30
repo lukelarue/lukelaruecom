@@ -42,3 +42,15 @@ output "secret_manager_secret_ids" {
   description = "Secret resource IDs managed by Terraform"
   value       = { for name, secret in google_secret_manager_secret.managed : name => secret.id }
 }
+
+data "google_secret_manager_secret_version" "login_api_session_signing_key_latest" {
+  project = var.project_id
+  secret  = "login-api-session-signing-key"
+  version = var.login_api_session_signing_key_version
+}
+
+data "google_secret_manager_secret_version" "google_oauth_client_secret_latest" {
+  project = var.project_id
+  secret  = "google-oauth-client-secret"
+  version = "latest"
+}
