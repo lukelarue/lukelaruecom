@@ -63,6 +63,8 @@ jobs:
       - name: Run integration tests inside Docker image
         run: |
           docker run --rm \
+            --volume "${{ github.workspace }}:/workspace:ro" \
+            --env CHAT_API_SRC_DIR=/workspace/services/chat-api \
             --entrypoint bash \
             ${{ matrix.image }}:tester \
             -lc "npx firebase emulators:exec --only firestore 'npm run test:integration'"
