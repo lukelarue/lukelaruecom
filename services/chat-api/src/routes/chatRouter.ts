@@ -1,10 +1,16 @@
 import { Router, type NextFunction, type Request, type RequestHandler, type Response } from 'express';
 import { z } from 'zod';
 
-import { requireUser } from '../middleware/auth';
-import type { MessageStoreContract } from '../services/messageStore';
-import type { ChannelDescriptor } from '../types/chat';
-import { buildChannelMetadata, descriptorFromParsedChannel, ensureChannelAccessibility, parseChannelId, sortParticipantIds } from '../utils/channel';
+import { requireUser } from '../middleware/auth.js';
+import type { MessageStoreContract } from '../services/messageStore.js';
+import type { ChannelDescriptor } from '../types/chat.js';
+import {
+  buildChannelMetadata,
+  descriptorFromParsedChannel,
+  ensureChannelAccessibility,
+  parseChannelId,
+  sortParticipantIds,
+} from '../utils/channel.js';
 
 const MAX_HISTORY_LIMIT = 200;
 
@@ -242,7 +248,7 @@ export const createChatRouter = ({ messageStore, defaultHistoryLimit }: CreateCh
 
       const channelIds = await messageStore.listChannels();
       const channels = channelIds
-        .map((channelId) => {
+        .map((channelId): { channelId: string; channelType: string; metadata: Record<string, unknown> } | null => {
           try {
             const parsed = parseChannelId(channelId);
             if (!ensureChannelAccessibility(parsed, req.user!.id)) {

@@ -1,6 +1,6 @@
 import { Router, type RequestHandler } from 'express';
 
-import { loginWithGoogle, getSession, signOut } from '../controllers/authController';
+import { loginWithGoogle, getSession, signOut } from '../controllers/authController.js';
 
 export const authRouter = Router();
 

@@ -2,10 +2,10 @@ import type { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import { z } from 'zod';
 
-import { config } from '../config';
-import { getFirestore } from '../lib/firestore';
-import { verifyGoogleIdToken } from '../lib/googleAuth';
-import type { SessionTokenPayload, UserProfile } from '../types';
+import { config } from '../config.js';
+import { getFirestore } from '../lib/firestore.js';
+import { verifyGoogleIdToken } from '../lib/googleAuth.js';
+import type { SessionTokenPayload, UserProfile } from '../types/index.js';
 
 const googleLoginBodySchema = z.object({
   credential: z.string().min(10),

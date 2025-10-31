@@ -3,9 +3,9 @@ import express, { type NextFunction, type Request, type Response } from 'express
 import helmet from 'helmet';
 import morgan from 'morgan';
 
-import { config } from './config';
-import { createChatRouter } from './routes/chatRouter';
-import type { MessageStoreContract } from './services/messageStore';
+import { config } from './config.js';
+import { createChatRouter } from './routes/chatRouter.js';
+import type { MessageStoreContract } from './services/messageStore.js';
 
 export type AppDependencies = {
   messageStore: MessageStoreContract;

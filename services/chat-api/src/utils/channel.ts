@@ -1,4 +1,4 @@
-import type { ChannelDescriptor } from '../types/chat';
+import type { ChannelDescriptor } from '../types/chat.js';
 
 export const DEFAULT_GLOBAL_SCOPE = 'default';
 

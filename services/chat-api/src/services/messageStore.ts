@@ -1,8 +1,8 @@
 import type { Firestore, CollectionReference, QuerySnapshot, DocumentData } from '@google-cloud/firestore';
 import { randomUUID } from 'node:crypto';
 
-import type { ChatMessageRecord, ChatMessagePayload, ChannelDescriptor } from '../types/chat';
-import { buildChannelMetadata, resolveChannelId } from '../utils/channel';
+import type { ChatMessageRecord, ChatMessagePayload, ChannelDescriptor } from '../types/chat.js';
+import { buildChannelMetadata, resolveChannelId } from '../utils/channel.js';
 
 const CHAT_COLLECTION = 'chatMessages';
 

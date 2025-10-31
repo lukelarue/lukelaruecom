@@ -20,6 +20,8 @@ export type ChatMessageRecord = ChatMessagePayload & {
   updatedAt: string;
 };
 
+export type ChannelMetadata = Record<string, unknown>;
+
 export type SendMessageRequest = ChatMessagePayload &
   ChannelDescriptor & {
     id?: string;

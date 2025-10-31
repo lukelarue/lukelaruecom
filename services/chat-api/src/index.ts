@@ -1,7 +1,7 @@
-import { createApp } from './app';
-import { config } from './config';
-import { getFirestore } from './lib/firestore';
-import { MessageStore } from './services/messageStore';
+import { createApp } from './app.js';
+import { config } from './config.js';
+import { getFirestore } from './lib/firestore.js';
+import { MessageStore } from './services/messageStore.js';
 
 const firestore = getFirestore();
 const messageStore = new MessageStore({ firestore });

@@ -4,8 +4,8 @@ import express, { type NextFunction, type Request, type Response } from 'express
 import helmet from 'helmet';
 import morgan from 'morgan';
 
-import { config } from './config';
-import { authRouter } from './routes/auth';
+import { config } from './config.js';
+import { authRouter } from './routes/auth.js';
 
 export const createApp = () => {
   const app = express();
