@@ -1,6 +1,6 @@
 import { OAuth2Client } from 'google-auth-library';
 
-import { config } from '../config';
+import { config } from '../config.js';
 
 export type GoogleProfile = {
   id: string;
