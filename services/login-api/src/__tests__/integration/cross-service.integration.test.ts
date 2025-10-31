@@ -1,9 +1,13 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
+
 import type { Firestore } from '@google-cloud/firestore';
 import type { Express } from 'express';
 import request from 'supertest';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
-import type { UserProfile } from '../../types';
+import type { UserProfile } from '../../types/index.js';
 
 const USERS_COLLECTION = 'users';
 const CHAT_MESSAGES_COLLECTION = 'chatMessages';
@@ -12,6 +16,16 @@ const TEST_USER_ID = 'contract-user-1';
 let firestore: Firestore;
 let loginApp: Express;
 let chatApp: Express;
+
+const resolveChatApiRoot = () => {
+  const envPath = process.env.CHAT_API_SRC_DIR;
+  if (envPath) {
+    return path.resolve(envPath);
+  }
+
+  const testDir = path.dirname(fileURLToPath(import.meta.url));
+  return path.resolve(testDir, '../../../../chat-api');
+};
 
 const loginCredential = JSON.stringify({
   sub: TEST_USER_ID,
@@ -42,14 +56,24 @@ describe('cross-service contract', () => {
     process.env.FIRESTORE_EMULATOR_HOST = process.env.FIRESTORE_EMULATOR_HOST ?? 'localhost:8080';
     process.env.GCP_PROJECT_ID = 'demo-firestore';
 
-    const { getFirestore } = await import('../../lib/firestore');
-    const { createApp: createLoginApp } = await import('../../app');
+    const { getFirestore } = await import('../../lib/firestore.js');
+    const { createApp: createLoginApp } = await import('../../app.js');
 
     firestore = getFirestore();
     loginApp = createLoginApp();
 
-    const messageStoreModule = await import(new URL('../../../../chat-api/src/services/messageStore.ts', import.meta.url).href);
-    const chatAppModule = await import(new URL('../../../../chat-api/src/app.ts', import.meta.url).href);
+    const chatApiRoot = resolveChatApiRoot();
+    const messageStorePath = path.join(chatApiRoot, 'src/services/messageStore.ts');
+    const chatAppPath = path.join(chatApiRoot, 'src/app.ts');
+
+    if (!fs.existsSync(messageStorePath) || !fs.existsSync(chatAppPath)) {
+      throw new Error(
+        'Chat API sources not found. Ensure CHAT_API_SRC_DIR points to the chat-api workspace (mount the repository when running inside Docker).'
+      );
+    }
+
+    const messageStoreModule = await import(pathToFileURL(messageStorePath).href);
+    const chatAppModule = await import(pathToFileURL(chatAppPath).href);
 
     const MessageStoreClass = messageStoreModule.MessageStore as new (deps: { firestore: Firestore }) => {
       saveMessage: (...args: unknown[]) => Promise<unknown>;
