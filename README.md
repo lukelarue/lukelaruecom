@@ -34,9 +34,9 @@ Full-stack prototype for the LukeLaRue gaming experience. The monorepo houses a 
 ### Production Environment Variables
 - **Frontend (`apps/web/.env.production`)**
   ```env
-  VITE_LOGIN_API_BASE_URL=https://login-api.lukelarue.com
-  VITE_CHAT_API_BASE_URL=https://chat-api.lukelarue.com
-  VITE_GOOGLE_CLIENT_ID=<google-oauth-client-id>
+  VITE_LOGIN_API_BASE_URL=https://login-api-226428490565.us-central1.run.app
+  VITE_CHAT_API_BASE_URL=https://chat-api-226428490565.us-central1.run.app
+  VITE_GOOGLE_CLIENT_ID=226428490565-rj7bibt60n6errq7fp29utte133s8osc.apps.googleusercontent.com
   VITE_GOOGLE_LOGIN_MOCK=false
   ```
 - **Login API (`services/login-api` Cloud Run env)**
@@ -44,8 +44,8 @@ Full-stack prototype for the LukeLaRue gaming experience. The monorepo houses a 
   NODE_ENV=production
   PORT=8080
   WEB_APP_ORIGINS=https://lukelarue.com
-  GCP_PROJECT_ID=<gcp-project-id>
-  GOOGLE_CLIENT_ID=<google-oauth-client-id>
+  GCP_PROJECT_ID=parabolic-env-456611-q9
+  GOOGLE_CLIENT_ID=226428490565-rj7bibt60n6errq7fp29utte133s8osc.apps.googleusercontent.com
   SESSION_COOKIE_NAME=session_token
   SESSION_JWT_SECRET=projects/<project>/secrets/session-jwt-secret/versions/latest
   SESSION_EXPIRES_IN=604800
@@ -58,7 +58,7 @@ Full-stack prototype for the LukeLaRue gaming experience. The monorepo houses a 
   NODE_ENV=production
   PORT=8080
   WEB_APP_ORIGINS=https://lukelarue.com
-  GCP_PROJECT_ID=<gcp-project-id>
+  GCP_PROJECT_ID=parabolic-env-456611-q9
   USE_FIRESTORE_EMULATOR=false
   DEFAULT_CHANNEL_HISTORY_LIMIT=50
   ```
