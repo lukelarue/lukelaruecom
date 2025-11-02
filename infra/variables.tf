@@ -127,7 +127,7 @@ variable "chat_api_default_channel_history_limit" {
 variable "frontend_domains" {
   description = "Domain names served by the frontend HTTPS load balancer"
   type        = list(string)
-  default     = [
+  default = [
     "lukelarue.com",
     "www.lukelarue.com"
   ]
