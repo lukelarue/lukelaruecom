@@ -46,6 +46,12 @@ variable "chat_api_image_tag" {
   default     = "latest"
 }
 
+variable "frontend_image_tag" {
+  description = "Container image tag for the frontend deployment"
+  type        = string
+  default     = "latest"
+}
+
 variable "login_api_min_instance_count" {
   description = "Minimum number of login API Cloud Run instances"
   type        = number
@@ -66,6 +72,18 @@ variable "chat_api_min_instance_count" {
 
 variable "chat_api_max_instance_count" {
   description = "Maximum number of chat API Cloud Run instances"
+  type        = number
+  default     = 3
+}
+
+variable "frontend_min_instance_count" {
+  description = "Minimum number of frontend Cloud Run instances"
+  type        = number
+  default     = 0
+}
+
+variable "frontend_max_instance_count" {
+  description = "Maximum number of frontend Cloud Run instances"
   type        = number
   default     = 3
 }
@@ -104,6 +122,15 @@ variable "chat_api_default_channel_history_limit" {
   description = "Default number of chat messages returned when no limit is provided"
   type        = number
   default     = 50
+}
+
+variable "frontend_domains" {
+  description = "Domain names served by the frontend HTTPS load balancer"
+  type        = list(string)
+  default     = [
+    "lukelarue.com",
+    "www.lukelarue.com"
+  ]
 }
 
 variable "login_api_google_client_id" {

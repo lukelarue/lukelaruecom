@@ -4,6 +4,10 @@ resource "google_project_service" "artifactregistry" {
   disable_on_destroy = false
 }
 
+data "google_project" "current" {
+  project_id = var.project_id
+}
+
 locals {
   artifact_registry_repositories = {
     login_api = {
@@ -18,6 +22,13 @@ locals {
       description   = "Docker images for the Chat API Cloud Run service."
       labels = {
         service = "chat-api"
+      }
+    }
+    frontend = {
+      repository_id = "frontend"
+      description   = "Docker images for the web frontend Cloud Run service."
+      labels = {
+        service = "frontend"
       }
     }
   }
@@ -44,6 +55,16 @@ resource "google_artifact_registry_repository" "api" {
   )
 
   depends_on = [google_project_service.artifactregistry]
+}
+
+resource "google_artifact_registry_repository_iam_member" "cloud_run_pull" {
+  for_each = google_artifact_registry_repository.api
+
+  project    = var.project_id
+  location   = each.value.location
+  repository = each.value.repository_id
+  role       = "roles/artifactregistry.reader"
+  member     = "serviceAccount:service-${data.google_project.current.number}@serverless-robot-prod.iam.gserviceaccount.com"
 }
 
 output "artifact_registry_repository_ids" {

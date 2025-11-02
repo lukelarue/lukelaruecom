@@ -7,6 +7,50 @@ resource "google_project_service" "run" {
 locals {
   login_api_image = "${var.artifact_registry_location}-docker.pkg.dev/${var.project_id}/login-api/login-api:${var.login_api_image_tag}"
   chat_api_image  = "${var.artifact_registry_location}-docker.pkg.dev/${var.project_id}/chat-api/chat-api:${var.chat_api_image_tag}"
+  frontend_image  = "${var.artifact_registry_location}-docker.pkg.dev/${var.project_id}/frontend/frontend:${var.frontend_image_tag}"
+}
+
+resource "google_cloud_run_service" "frontend" {
+  name     = "frontend"
+  location = var.cloud_run_location
+
+  template {
+    metadata {
+      annotations = {
+        "autoscaling.knative.dev/minScale" = tostring(var.frontend_min_instance_count)
+        "autoscaling.knative.dev/maxScale" = tostring(var.frontend_max_instance_count)
+        "run.googleapis.com/ingress"       = "internal-and-cloud-load-balancing"
+      }
+    }
+
+    spec {
+      service_account_name = google_service_account.frontend.email
+
+      containers {
+        image = local.frontend_image
+
+        ports {
+          name           = "http1"
+          container_port = 8080
+        }
+
+        env {
+          name  = "NODE_ENV"
+          value = "production"
+        }
+      }
+    }
+  }
+
+  traffic {
+    percent         = 100
+    latest_revision = true
+  }
+
+  depends_on = [
+    google_project_service.run,
+    google_service_account.frontend
+  ]
 }
 
 resource "google_cloud_run_service" "login_api" {

@@ -6,6 +6,7 @@ on:
     paths:
       - 'services/login-api/**'
       - 'services/chat-api/**'
+      - 'apps/web/**'
       - 'package.json'
       - 'package-lock.json'
       - '.github/workflows/api-image-publish.yml'
@@ -29,13 +30,20 @@ jobs:
       matrix:
         include:
           - service: login-api
-            directory: services/login-api
             repository: login-api
             image: login-api
+            context: services/login-api
+            dockerfile: services/login-api/Dockerfile
           - service: chat-api
-            directory: services/chat-api
             repository: chat-api
             image: chat-api
+            context: services/chat-api
+            dockerfile: services/chat-api/Dockerfile
+          - service: frontend
+            repository: frontend
+            image: frontend
+            context: .
+            dockerfile: apps/web/Dockerfile
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -72,8 +80,8 @@ jobs:
         name: Build and push ${{ matrix.service }} image
         uses: docker/build-push-action@v5
         with:
-          context: ${{ matrix.directory }}
-          file: ${{ matrix.directory }}/Dockerfile
+          context: ${{ matrix.context }}
+          file: ${{ matrix.dockerfile }}
           push: true
           platforms: linux/amd64
           tags: |
