@@ -21,6 +21,7 @@ env:
   GCP_WORKLOAD_IDENTITY_PROVIDER: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
   GCP_DEPLOY_SA_EMAIL: ${{ vars.GCP_DEPLOY_SA_EMAIL }}
   ARTIFACT_REGISTRY_HOST: ${{ vars.GCP_ARTIFACT_REGISTRY_HOST }}
+  CLOUD_RUN_REGION: us-central1
 
 jobs:
   build-and-push:
@@ -94,6 +95,13 @@ jobs:
           cache-from: type=registry,ref=${{ env.ARTIFACT_REGISTRY_HOST }}/${{ env.GCP_PROJECT_ID }}/${{ matrix.repository }}/${{ matrix.image }}:latest
           cache-to: type=inline
           build-args: ${{ matrix.build_args }}
+
+      - name: Deploy ${{ matrix.service }} to Cloud Run
+        uses: google-github-actions/deploy-cloudrun@v2
+        with:
+          service: ${{ matrix.service }}
+          region: ${{ env.CLOUD_RUN_REGION }}
+          image: ${{ env.ARTIFACT_REGISTRY_HOST }}/${{ env.GCP_PROJECT_ID }}/${{ matrix.repository }}/${{ matrix.image }}@${{ steps.build.outputs.digest }}
 
       - name: Publish deployment summary
         run: |
