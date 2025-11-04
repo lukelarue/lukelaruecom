@@ -34,16 +34,20 @@ jobs:
             image: login-api
             context: services/login-api
             dockerfile: services/login-api/Dockerfile
+            build_args: ""
           - service: chat-api
             repository: chat-api
             image: chat-api
             context: services/chat-api
             dockerfile: services/chat-api/Dockerfile
+            build_args: ""
           - service: frontend
             repository: frontend
             image: frontend
             context: .
             dockerfile: apps/web/Dockerfile
+            build_args: |
+              VITE_GOOGLE_CLIENT_ID=${{ vars.VITE_GOOGLE_CLIENT_ID }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -89,6 +93,7 @@ jobs:
             ${{ env.ARTIFACT_REGISTRY_HOST }}/${{ env.GCP_PROJECT_ID }}/${{ matrix.repository }}/${{ matrix.image }}:latest
           cache-from: type=registry,ref=${{ env.ARTIFACT_REGISTRY_HOST }}/${{ env.GCP_PROJECT_ID }}/${{ matrix.repository }}/${{ matrix.image }}:latest
           cache-to: type=inline
+          build-args: ${{ matrix.build_args }}
 
       - name: Publish deployment summary
         run: |

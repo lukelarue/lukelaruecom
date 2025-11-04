@@ -3,6 +3,9 @@
 FROM node:22-alpine AS build
 WORKDIR /workspace
 
+ARG VITE_GOOGLE_CLIENT_ID
+ENV VITE_GOOGLE_CLIENT_ID=${VITE_GOOGLE_CLIENT_ID}
+
 # Install workspace dependencies and build the Vite bundle
 COPY package.json package-lock.json ./
 COPY apps ./apps

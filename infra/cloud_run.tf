@@ -14,12 +14,17 @@ resource "google_cloud_run_service" "frontend" {
   name     = "frontend"
   location = var.cloud_run_location
 
+  metadata {
+    annotations = {
+      "run.googleapis.com/ingress" = "internal-and-cloud-load-balancing"
+    }
+  }
+
   template {
     metadata {
       annotations = {
         "autoscaling.knative.dev/minScale" = tostring(var.frontend_min_instance_count)
         "autoscaling.knative.dev/maxScale" = tostring(var.frontend_max_instance_count)
-        "run.googleapis.com/ingress"       = "internal-and-cloud-load-balancing"
       }
     }
 
@@ -51,6 +56,13 @@ resource "google_cloud_run_service" "frontend" {
     google_project_service.run,
     google_service_account.frontend
   ]
+}
+
+resource "google_cloud_run_service_iam_member" "frontend_public" {
+  service  = google_cloud_run_service.frontend.name
+  location = google_cloud_run_service.frontend.location
+  role     = "roles/run.invoker"
+  member   = "allUsers"
 }
 
 resource "google_cloud_run_service" "login_api" {

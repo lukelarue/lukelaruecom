@@ -11,20 +11,40 @@ if (!env.googleClientId && !env.authMock && !env.googleLoginMock) {
   console.warn('VITE_GOOGLE_CLIENT_ID is not set. Google Sign-In will not work.');
 }
 
-const shouldWrapWithGoogleProvider = !env.authMock && !env.googleLoginMock;
+const requiresGoogleProvider = !env.authMock && !env.googleLoginMock;
+const missingGoogleClientId = requiresGoogleProvider && !env.googleClientId;
+
+if (missingGoogleClientId) {
+  // eslint-disable-next-line no-console
+  console.error('VITE_GOOGLE_CLIENT_ID is required in production environments.');
+}
+
+const appContent = (
+  <BrowserRouter>
+    <App />
+  </BrowserRouter>
+);
 
 const app = (
   <React.StrictMode>
-    {shouldWrapWithGoogleProvider ? (
+    {missingGoogleClientId ? (
+      <div className="flex min-h-screen items-center justify-center bg-slate-950 text-slate-100">
+        <div className="max-w-md space-y-3 rounded-2xl border border-rose-500/40 bg-slate-900/80 p-6 text-center shadow-xl">
+          <h1 className="text-xl font-semibold text-rose-300">Configuration required</h1>
+          <p className="text-sm text-slate-300">
+            Google Sign-In is unavailable because <code className="font-mono text-rose-200">VITE_GOOGLE_CLIENT_ID</code> is not set.
+          </p>
+          <p className="text-xs text-slate-500">
+            Update the deployed environment with the Google OAuth client ID to re-enable authentication.
+          </p>
+        </div>
+      </div>
+    ) : requiresGoogleProvider ? (
       <GoogleOAuthProvider clientId={env.googleClientId}>
-        <BrowserRouter>
-          <App />
-        </BrowserRouter>
+        {appContent}
       </GoogleOAuthProvider>
     ) : (
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
+      appContent
     )}
   </React.StrictMode>
 );

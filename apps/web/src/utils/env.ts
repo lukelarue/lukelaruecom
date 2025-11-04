@@ -1,6 +1,6 @@
 const loginApiBaseUrl = import.meta.env.VITE_LOGIN_API_BASE_URL ?? '/login-api';
 const chatApiBaseUrl = import.meta.env.VITE_CHAT_API_BASE_URL ?? '/chat-api';
-const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID ?? '';
+const googleClientId = (import.meta.env.VITE_GOOGLE_CLIENT_ID ?? '').trim();
 
 const resolveAuthMode = (): 'frontend-mock' | 'backend' => {
   if (import.meta.env.VITEST) {
