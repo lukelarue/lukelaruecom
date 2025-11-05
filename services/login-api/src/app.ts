@@ -26,7 +26,12 @@ export const createApp = () => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
   });
 
+  app.get('/login-api/healthz', (_req: Request, res: Response) => {
+    res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  });
+
   app.use('/auth', authRouter);
+  app.use('/login-api/auth', authRouter);
 
   app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
     void _next;

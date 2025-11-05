@@ -29,8 +29,20 @@ export const createApp = ({ messageStore }: AppDependencies) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
   });
 
+  app.get('/chat-api/healthz', (_req: Request, res: Response) => {
+    res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  });
+
   app.use(
     '/chat',
+    createChatRouter({
+      messageStore,
+      defaultHistoryLimit: config.defaultHistoryLimit,
+    })
+  );
+
+  app.use(
+    '/chat-api/chat',
     createChatRouter({
       messageStore,
       defaultHistoryLimit: config.defaultHistoryLimit,
