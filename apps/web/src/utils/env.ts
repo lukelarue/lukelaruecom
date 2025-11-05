@@ -1,6 +1,7 @@
 const loginApiBaseUrl = import.meta.env.VITE_LOGIN_API_BASE_URL ?? '/login-api';
 const chatApiBaseUrl = import.meta.env.VITE_CHAT_API_BASE_URL ?? '/chat-api';
 const googleClientId = (import.meta.env.VITE_GOOGLE_CLIENT_ID ?? '').trim();
+const hasGoogleClientId = googleClientId.length > 0;
 
 const resolveAuthMode = (): 'frontend-mock' | 'backend' => {
   if (import.meta.env.VITEST) {
@@ -34,11 +35,20 @@ const resolveAuthMode = (): 'frontend-mock' | 'backend' => {
   return import.meta.env.DEV ? 'frontend-mock' : 'backend';
 };
 
-const authMode = resolveAuthMode();
+const resolvedAuthMode = resolveAuthMode();
+const authMode = hasGoogleClientId ? resolvedAuthMode : 'frontend-mock';
 const authMock = authMode === 'frontend-mock';
 
 const googleLoginMockEnv = import.meta.env.VITE_GOOGLE_LOGIN_MOCK;
-const googleLoginMock = googleLoginMockEnv ? googleLoginMockEnv === 'true' : import.meta.env.DEV;
+const googleLoginMock = (() => {
+  if (googleLoginMockEnv) {
+    return googleLoginMockEnv === 'true';
+  }
+  if (!hasGoogleClientId) {
+    return true;
+  }
+  return import.meta.env.DEV;
+})();
 
 const fakeGoogleCredential =
   import.meta.env.VITE_FAKE_GOOGLE_CREDENTIAL ?? '{"email":"dev-user@example.com","name":"Dev User"}';
@@ -47,6 +57,7 @@ export const env = {
   loginApiBaseUrl,
   chatApiBaseUrl,
   googleClientId,
+  hasGoogleClientId,
   authMode,
   authMock,
   googleLoginMock,
