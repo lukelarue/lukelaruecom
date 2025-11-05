@@ -26,7 +26,7 @@ const shouldDisableChat = (error: unknown): boolean => {
   if (!error.response) {
     return true;
   }
-  return error.response.status >= 500;
+  return false;
 };
 
 const buildClient = (userId: string | undefined, userName: string | undefined): ChatClient | null => {
