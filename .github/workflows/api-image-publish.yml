@@ -63,6 +63,17 @@ jobs:
             fi
           done
 
+      - name: Verify frontend environment variables
+        if: matrix.service == 'frontend'
+        env:
+          VITE_GOOGLE_CLIENT_ID: ${{ vars.VITE_GOOGLE_CLIENT_ID }}
+        run: |
+          TRIMMED="$(printf '%s' "$VITE_GOOGLE_CLIENT_ID" | tr -d '[:space:]')"
+          if [ -z "$TRIMMED" ]; then
+            echo "Missing required repository variable: VITE_GOOGLE_CLIENT_ID" >&2
+            exit 1
+          fi
+
       - id: auth
         name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
