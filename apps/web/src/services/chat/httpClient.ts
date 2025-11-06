@@ -145,13 +145,16 @@ export const createHttpChatClient = ({
             listener(data);
           } catch {
             // ignore malformed events
+            void 0;
           }
         };
         const onError = () => {
           // If SSE errors early, fall back to polling
           try {
             es.close();
-          } catch {}
+          } catch {
+            void 0;
+          }
           if (usingSSE) {
             usingSSE = false;
             cleanup = startPolling();
@@ -166,7 +169,9 @@ export const createHttpChatClient = ({
             es.removeEventListener('message', onMessage as EventListener);
             es.removeEventListener('error', onError as EventListener);
             es.close();
-          } catch {}
+          } catch {
+            void 0;
+          }
         };
         return cleanup;
       };
@@ -195,6 +200,7 @@ export const createHttpChatClient = ({
             }
           } catch {
             // ignore errors during polling
+            void 0;
           }
         };
 
