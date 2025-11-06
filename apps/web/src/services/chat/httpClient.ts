@@ -136,11 +136,14 @@ export const createHttpChatClient = ({
           }
         }
       } catch {
+        return;
       }
     };
 
     void poll();
-    timer = setInterval(poll, 3000);
+    timer = setInterval(() => {
+      void poll();
+    }, 3000);
 
     return () => {
       if (timer) {
