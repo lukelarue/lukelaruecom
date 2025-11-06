@@ -142,12 +142,7 @@ export const ChatProvider = ({ children, defaultChannel }: ChatProviderProps) =>
         return () => {};
       }
       return client.subscribe(channelId, (message) => {
-        setMessages((prev) => {
-          if (prev.some((m) => m.id === message.id)) {
-            return prev;
-          }
-          return [...prev, message];
-        });
+        setMessages((prev) => (prev.some((m) => m.id === message.id) ? prev : [...prev, message]));
       });
     },
     [client, disabled]
@@ -230,12 +225,7 @@ export const ChatProvider = ({ children, defaultChannel }: ChatProviderProps) =>
 
       try {
         const sent = await client.sendMessage(input);
-        setMessages((prev) => {
-          if (prev.some((m) => m.id === sent.id)) {
-            return prev;
-          }
-          return [...prev, sent];
-        });
+        setMessages((prev) => (prev.some((m) => m.id === sent.id) ? prev : [...prev, sent]));
         setError(null);
         setDisabled(false);
       } catch (err) {

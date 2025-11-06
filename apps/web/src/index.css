@@ -14,3 +14,9 @@ body {
 a {
   @apply text-brand hover:text-brand-dark transition-colors;
 }
+
+@layer base {
+  h1, h2, h3, h4 {
+    @apply font-mono;
+  }
+}

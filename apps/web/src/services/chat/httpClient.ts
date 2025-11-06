@@ -43,8 +43,10 @@ export const createHttpChatClient = ({
   baseUrl: string;
   getAuthHeaders: () => { userId: string; userName?: string } | null;
 }): ChatClient => {
+  const normalizedBase = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+  const baseWithChat = `${normalizedBase}/chat`;
   const client = axios.create({
-    baseURL: baseUrl,
+    baseURL: baseWithChat,
     withCredentials: true,
   });
 
@@ -77,7 +79,7 @@ export const createHttpChatClient = ({
   };
 
   const send = async (input: SendMessageInput): Promise<ChatMessage> => {
-    const response = await client.post('chat/messages', {
+    const response = await client.post('messages', {
       ...routeForDescriptor(input.descriptor),
       body: input.body,
       metadata: input.metadata,
@@ -87,14 +89,14 @@ export const createHttpChatClient = ({
   };
 
   const fetch = async (descriptor: ChannelDescriptor, limit: number): Promise<ChatMessage[]> => {
-    const response = await client.get('chat/messages', {
+    const response = await client.get('messages', {
       params: queryForDescriptor(descriptor, limit),
     });
     return ensureMessages(response.data.messages);
   };
 
   const fetchById = async (channelId: string, limit: number): Promise<ChatMessage[]> => {
-    const response = await client.get('chat/messages', {
+    const response = await client.get('messages', {
       params: {
         channelId,
         limit,
@@ -104,52 +106,8 @@ export const createHttpChatClient = ({
   };
 
   const list = async (): Promise<ChatChannelSummary[]> => {
-    const response = await client.get('chat/channels');
+    const response = await client.get('channels');
     return ensureChannels(response.data.channels);
-  };
-
-  const subscribe = (channelId: string, listener: (message: ChatMessage) => void): (() => void) => {
-    let timer: ReturnType<typeof setInterval> | null = null;
-    let lastSeen: string | null = null;
-
-    const poll = async () => {
-      try {
-        const response = await client.get('chat/messages', {
-          params: {
-            channelId,
-            limit: 50,
-          },
-        });
-        const messages = ensureMessages(response.data.messages);
-        if (messages.length === 0) {
-          return;
-        }
-        if (!lastSeen) {
-          lastSeen = messages[messages.length - 1]!.createdAt;
-          return;
-        }
-        const newMessages = messages.filter((m) => m.createdAt > lastSeen!);
-        if (newMessages.length > 0) {
-          lastSeen = newMessages[newMessages.length - 1]!.createdAt;
-          for (const m of newMessages) {
-            listener(m);
-          }
-        }
-      } catch {
-        return;
-      }
-    };
-
-    void poll();
-    timer = setInterval(() => {
-      void poll();
-    }, 3000);
-
-    return () => {
-      if (timer) {
-        clearInterval(timer);
-      }
-    };
   };
 
   return {
@@ -157,6 +115,52 @@ export const createHttpChatClient = ({
     fetchMessagesById: async (channelId, limit = 50) => fetchById(channelId, limit),
     listChannels: async () => list(),
     sendMessage: async (input) => send(input),
-    subscribe: (channelId, listener) => subscribe(channelId, listener),
+    subscribe: (channelId, listener) => {
+      const auth = getAuthHeaders();
+      if (!auth) {
+        // Should not happen because axios client would have rejected earlier calls, but guard anyway
+        return () => {};
+      }
+
+      const sseBase = (normalizedBase + '/chat');
+      const url = new URL(sseBase, window.location.origin);
+      url.pathname = url.pathname.replace(/\/$/, '') + '/stream';
+      url.searchParams.set('channelId', channelId);
+      url.searchParams.set('userId', auth.userId);
+      if (auth.userName) {
+        url.searchParams.set('userName', auth.userName);
+      }
+
+      const es = new EventSource(url.toString());
+      const onMessage = (event: MessageEvent) => {
+        try {
+          const data = JSON.parse(event.data) as ChatMessage;
+          listener(data);
+        } catch {
+          // ignore malformed events
+        }
+      };
+      const onError = () => {
+        // Close on error; ChatContext will recreate on reselect or reload
+        try {
+          es.close();
+        } catch {
+          // noop
+        }
+      };
+
+      es.addEventListener('message', onMessage);
+      es.addEventListener('error', onError);
+
+      return () => {
+        try {
+          es.removeEventListener('message', onMessage as EventListener);
+          es.removeEventListener('error', onError as EventListener);
+          es.close();
+        } catch {
+          // noop
+        }
+      };
+    },
   };
 };

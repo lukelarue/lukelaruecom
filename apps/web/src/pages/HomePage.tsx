@@ -23,15 +23,15 @@ export const HomePage = () => {
       <div className="flex flex-col gap-12">
         <section className="flex flex-col gap-6">
           <div>
-            <h1 className="text-3xl font-semibold text-white">LukeLaRue Gaming Lobby</h1>
-            <p className="text-sm text-slate-400">
+            <h1 className="text-3xl font-semibold text-zinc-100">LukeLaRue Gaming Lobby</h1>
+            <p className="text-sm text-zinc-400">
               Sign in with Google to save progress, chat with friends, and compete in upcoming games.
             </p>
           </div>
           {!session ? (
-            <div className="max-w-md rounded-2xl border border-slate-800 bg-slate-900/60 p-6 shadow-lg">
+            <div className="max-w-md rounded-2xl border border-zinc-800 bg-zinc-900/60 p-6 shadow-lg">
               <h2 className="text-xl font-semibold">Join the lobby</h2>
-              <p className="mt-2 text-sm text-slate-400">
+              <p className="mt-2 text-sm text-zinc-400">
                 Use your Google account to access early features and get notified as new games launch.
               </p>
               <div className="mt-6 flex flex-col gap-3">
@@ -41,7 +41,7 @@ export const HomePage = () => {
                     onClick={() => {
                       void loginWithCredential('mock-credential');
                     }}
-                    className="flex items-center justify-center rounded-md bg-brand px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-brand/90"
+                    className="flex items-center justify-center rounded-md bg-brand px-4 py-2 text-sm font-semibold text-zinc-950 transition hover:bg-brand/90"
                   >
                     Sign in (mock)
                   </button>
@@ -51,7 +51,7 @@ export const HomePage = () => {
                     onClick={() => {
                       void loginWithCredential(env.fakeGoogleCredential);
                     }}
-                    className="flex items-center justify-center rounded-md bg-brand px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-brand/90"
+                    className="flex items-center justify-center rounded-md bg-brand px-4 py-2 text-sm font-semibold text-zinc-950 transition hover:bg-brand/90"
                   >
                     Sign in (emulator)
                   </button>
@@ -71,7 +71,7 @@ export const HomePage = () => {
                 )}
                 {loading ? <LoadingScreen message="Authenticating" className="h-24 rounded-xl" /> : null}
                 {!loading ? (
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-zinc-500">
                     Your Google profile will be stored securely in Firestore upon sign-in.
                   </p>
                 ) : null}
@@ -80,9 +80,9 @@ export const HomePage = () => {
             </div>
           ) : (
             <div className="flex gap-6">
-              <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 shadow-lg">
+              <div className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-6 shadow-lg">
                 <h2 className="text-xl font-semibold">Welcome back, {firstName}</h2>
-                <p className="mt-2 text-sm text-slate-400">
+                <p className="mt-2 text-sm text-zinc-400">
                   Your profile is synced. Chat, multiplayer lobbies, and game stats will appear here soon.
                 </p>
                 <div className="mt-6 flex flex-wrap items-center gap-4">
@@ -91,7 +91,7 @@ export const HomePage = () => {
                     onClick={() => {
                       void signOut();
                     }}
-                    className="rounded-full bg-slate-800 px-4 py-2 text-sm font-medium text-slate-200 transition hover:bg-slate-700"
+                    className="rounded-full bg-zinc-800 px-4 py-2 text-sm font-medium text-zinc-200 transition hover:bg-zinc-700"
                   >
                     Sign out
                   </button>
@@ -100,19 +100,19 @@ export const HomePage = () => {
                     onClick={() => {
                       navigate('/lobby');
                     }}
-                    className="rounded-full border border-brand px-4 py-2 text-sm font-medium text-brand transition hover:bg-brand hover:text-slate-950"
+                    className="rounded-full border border-brand px-4 py-2 text-sm font-medium text-brand transition hover:bg-brand hover:text-zinc-950"
                   >
                     Enter lobby
                   </button>
-                  <div className="text-xs text-slate-500">
+                  <div className="text-xs text-zinc-500">
                     Signed in as
-                    <div className="font-medium text-slate-300">{session.user.email}</div>
+                    <div className="font-medium text-zinc-300">{session.user.email}</div>
                   </div>
                 </div>
               </div>
-              <div className="flex flex-1 flex-col gap-4 rounded-2xl border border-dashed border-slate-800 bg-slate-900/30 p-6">
-                <h3 className="text-lg font-medium text-slate-200">Upcoming features</h3>
-                <ul className="flex flex-col gap-2 text-sm text-slate-400">
+              <div className="flex flex-1 flex-col gap-4 rounded-2xl border border-dashed border-zinc-800 bg-zinc-900/30 p-6">
+                <h3 className="text-lg font-medium text-zinc-200">Upcoming features</h3>
+                <ul className="flex flex-col gap-2 text-sm text-zinc-400">
                   <li className="flex items-center gap-2">
                     <span className="h-2 w-2 rounded-full bg-brand" aria-hidden />
                     Multiplayer chat rooms powered by WebSockets.

@@ -184,6 +184,43 @@ export type CreateChatRouterDeps = {
 export const createChatRouter = ({ messageStore, defaultHistoryLimit }: CreateChatRouterDeps) => {
   const router = Router();
 
+  // SSE subscribers by channelId
+  const channelSubscribers = new Map<string, Set<Response>>();
+
+  const addSubscriber = (channelId: string, res: Response) => {
+    let set = channelSubscribers.get(channelId);
+    if (!set) {
+      set = new Set<Response>();
+      channelSubscribers.set(channelId, set);
+    }
+    set.add(res);
+  };
+
+  const removeSubscriber = (channelId: string, res: Response) => {
+    const set = channelSubscribers.get(channelId);
+    if (set) {
+      set.delete(res);
+      if (set.size === 0) {
+        channelSubscribers.delete(channelId);
+      }
+    }
+  };
+
+  const publishToChannel = (channelId: string, payload: unknown) => {
+    const set = channelSubscribers.get(channelId);
+    if (!set || set.size === 0) {
+      return;
+    }
+    const data = `data: ${JSON.stringify(payload)}\n\n`;
+    for (const res of set) {
+      try {
+        res.write(data);
+      } catch {
+        // ignore broken pipe
+      }
+    }
+  };
+
   router.use(requireUser);
 
   router.post(
@@ -205,6 +242,9 @@ export const createChatRouter = ({ messageStore, defaultHistoryLimit }: CreateCh
         body: parsed.data.body,
         metadata: parsed.data.metadata,
       });
+
+      // Broadcast to SSE subscribers for this channel
+      publishToChannel(record.channelId, record);
 
       return res.status(201).json({
         message: record,
@@ -270,6 +310,65 @@ export const createChatRouter = ({ messageStore, defaultHistoryLimit }: CreateCh
         .filter(Boolean);
 
       return res.json({ channels });
+    })
+  );
+
+  // Server-Sent Events stream per channel
+  router.get(
+    '/stream',
+    wrapAsync(async (req, res) => {
+      if (!req.user) {
+        return res.status(401).json({ message: 'Unauthorized' });
+      }
+
+      const rawChannelId = req.query.channelId;
+      if (!rawChannelId || typeof rawChannelId !== 'string') {
+        return res.status(400).json({ message: 'channelId is required' });
+      }
+
+      let parsed;
+      try {
+        parsed = parseChannelId(rawChannelId);
+      } catch (error) {
+        return res.status(400).json({ message: error instanceof Error ? error.message : 'Invalid channelId' });
+      }
+
+      if (!ensureChannelAccessibility(parsed, req.user.id)) {
+        return res.status(403).json({ message: 'Forbidden' });
+      }
+
+      // SSE headers
+      res.setHeader('Content-Type', 'text/event-stream');
+      res.setHeader('Cache-Control', 'no-cache, no-transform');
+      res.setHeader('Connection', 'keep-alive');
+      res.setHeader('X-Accel-Buffering', 'no');
+
+      // Immediately send a comment to establish the stream
+      res.write(': connected\n\n');
+
+      const channelId = parsed.channelId;
+      addSubscriber(channelId, res);
+
+      // Heartbeat to keep connections alive through proxies
+      const keepAlive = setInterval(() => {
+        try {
+          res.write(': keep-alive\n\n');
+        } catch {
+          // ignore errors; close handled below
+        }
+      }, 25000);
+
+      const onClose = () => {
+        clearInterval(keepAlive);
+        removeSubscriber(channelId, res);
+        try {
+          res.end();
+        } catch {
+          // ignore
+        }
+      };
+
+      req.on('close', onClose);
     })
   );
 
