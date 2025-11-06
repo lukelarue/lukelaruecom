@@ -77,7 +77,7 @@ export const createHttpChatClient = ({
   };
 
   const send = async (input: SendMessageInput): Promise<ChatMessage> => {
-    const response = await client.post('/chat/messages', {
+    const response = await client.post('chat/messages', {
       ...routeForDescriptor(input.descriptor),
       body: input.body,
       metadata: input.metadata,
@@ -87,14 +87,14 @@ export const createHttpChatClient = ({
   };
 
   const fetch = async (descriptor: ChannelDescriptor, limit: number): Promise<ChatMessage[]> => {
-    const response = await client.get('/chat/messages', {
+    const response = await client.get('chat/messages', {
       params: queryForDescriptor(descriptor, limit),
     });
     return ensureMessages(response.data.messages);
   };
 
   const fetchById = async (channelId: string, limit: number): Promise<ChatMessage[]> => {
-    const response = await client.get('/chat/messages', {
+    const response = await client.get('chat/messages', {
       params: {
         channelId,
         limit,
@@ -104,12 +104,49 @@ export const createHttpChatClient = ({
   };
 
   const list = async (): Promise<ChatChannelSummary[]> => {
-    const response = await client.get('/chat/channels');
+    const response = await client.get('chat/channels');
     return ensureChannels(response.data.channels);
   };
 
-  const subscribe = (): (() => void) => {
-    return () => {};
+  const subscribe = (channelId: string, listener: (message: ChatMessage) => void): (() => void) => {
+    let timer: ReturnType<typeof setInterval> | null = null;
+    let lastSeen: string | null = null;
+
+    const poll = async () => {
+      try {
+        const response = await client.get('chat/messages', {
+          params: {
+            channelId,
+            limit: 50,
+          },
+        });
+        const messages = ensureMessages(response.data.messages);
+        if (messages.length === 0) {
+          return;
+        }
+        if (!lastSeen) {
+          lastSeen = messages[messages.length - 1]!.createdAt;
+          return;
+        }
+        const newMessages = messages.filter((m) => m.createdAt > lastSeen!);
+        if (newMessages.length > 0) {
+          lastSeen = newMessages[newMessages.length - 1]!.createdAt;
+          for (const m of newMessages) {
+            listener(m);
+          }
+        }
+      } catch {
+      }
+    };
+
+    void poll();
+    timer = setInterval(poll, 3000);
+
+    return () => {
+      if (timer) {
+        clearInterval(timer);
+      }
+    };
   };
 
   return {
@@ -117,9 +154,6 @@ export const createHttpChatClient = ({
     fetchMessagesById: async (channelId, limit = 50) => fetchById(channelId, limit),
     listChannels: async () => list(),
     sendMessage: async (input) => send(input),
-    subscribe: (_channelId, listener) => {
-      void listener;
-      return subscribe();
-    },
+    subscribe: (channelId, listener) => subscribe(channelId, listener),
   };
 };

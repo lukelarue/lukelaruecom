@@ -1,10 +1,7 @@
 import { NavLink } from 'react-router-dom';
 import { clsx } from 'clsx';
 import { useAuthContext } from '@/hooks/useAuthContext';
-import { ChatProvider } from '@/context/ChatContext';
 import { ChatSidebar } from '@/components/Chat/ChatSidebar';
-
-const DEFAULT_CHANNEL = { channelType: 'global' } as const;
 
 export const Sidebar = () => {
   const { session, signOut, loading } = useAuthContext();
@@ -22,9 +19,7 @@ export const Sidebar = () => {
           <SidebarLink to="/profile" label="Profile" disabled={!session} />
         </nav>
         <div className="mt-6">
-          <ChatProvider defaultChannel={DEFAULT_CHANNEL}>
-            <ChatSidebar />
-          </ChatProvider>
+          <ChatSidebar />
         </div>
       </div>
       <footer className="border-t border-slate-800 px-4 py-4 text-sm text-slate-300">
