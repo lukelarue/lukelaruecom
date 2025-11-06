@@ -3,8 +3,8 @@ import type { Express } from 'express';
 import request from 'supertest';
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type { MessageStoreContract } from '../../services/messageStore';
-import type { ChatMessageRecord } from '../../types/chat';
+import type { MessageStoreContract } from '../../services/messageStore.js';
+import type { ChatMessageRecord } from '../../types/chat.js';
 
 const CHAT_MESSAGES_COLLECTION = 'chatMessages';
 
@@ -34,15 +34,18 @@ describe('chat api integration (offline)', () => {
   beforeAll(async () => {
     process.env.NODE_ENV = 'test';
     process.env.PORT = '0';
-    process.env.GCP_PROJECT_ID = 'demo-firestore';
+    process.env.GCP_PROJECT_ID = 'demo-firestore-offline';
     process.env.USE_FIRESTORE_EMULATOR = 'true';
     process.env.FIRESTORE_EMULATOR_HOST = process.env.FIRESTORE_EMULATOR_HOST ?? 'localhost:8080';
 
-    const firestoreModule = await import('../../lib/firestore');
+    const firestoreModule = await import('../../lib/firestore.js');
+    if (typeof (firestoreModule as any).resetFirestoreForTests === 'function') {
+      (firestoreModule as any).resetFirestoreForTests();
+    }
     firestore = firestoreModule.getFirestore();
 
-    const { MessageStore } = await import('../../services/messageStore');
-    const { createApp } = await import('../../app');
+    const { MessageStore } = await import('../../services/messageStore.js');
+    const { createApp } = await import('../../app.js');
 
     messageStore = new MessageStore({ firestore });
     app = createApp({ messageStore });

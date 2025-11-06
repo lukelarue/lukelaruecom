@@ -10,9 +10,9 @@ export const getFirestore = (): Firestore => {
       process.env.FIRESTORE_EMULATOR_HOST = config.dev.firestoreEmulatorHost;
     }
 
-    firestoreClient = new Firestore({
-      projectId: config.gcpProjectId,
-    });
+    // Use the latest env value to avoid cached project IDs across test files
+    const projectId = process.env.GCP_PROJECT_ID ?? config.gcpProjectId;
+    firestoreClient = new Firestore({ projectId });
 
     firestoreClient.settings({
       ignoreUndefinedProperties: true,
@@ -20,6 +20,11 @@ export const getFirestore = (): Firestore => {
   }
 
   return firestoreClient;
+};
+
+// Test-only utility to reset the cached client between test files
+export const resetFirestoreForTests = (): void => {
+  firestoreClient = null;
 };
 
 export type GetFirestore = typeof getFirestore;

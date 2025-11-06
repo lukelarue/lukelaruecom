@@ -3,10 +3,6 @@ import type { Express } from 'express';
 import request from 'supertest';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
-import { getFirestore } from '../../lib/firestore';
-import { MessageStore } from '../../services/messageStore';
-import { createApp } from '../../app';
-
 const CHAT_MESSAGES_COLLECTION = 'chatMessages';
 
 let firestore: Firestore;
@@ -54,7 +50,15 @@ describe('chat api integration (preloaded history)', () => {
     process.env.USE_FIRESTORE_EMULATOR = 'true';
     process.env.FIRESTORE_EMULATOR_HOST = process.env.FIRESTORE_EMULATOR_HOST ?? 'localhost:8080';
 
-    firestore = getFirestore();
+    // ensure a fresh Firestore client for this test file (distinct project)
+    const firestoreModule = await import('../../lib/firestore.js');
+    if (typeof (firestoreModule as any).resetFirestoreForTests === 'function') {
+      (firestoreModule as any).resetFirestoreForTests();
+    }
+    firestore = (firestoreModule as any).getFirestore();
+
+    const { MessageStore } = await import('../../services/messageStore.js');
+    const { createApp } = await import('../../app.js');
     const messageStore = new MessageStore({ firestore });
     app = createApp({ messageStore });
   });
@@ -74,7 +78,7 @@ describe('chat api integration (preloaded history)', () => {
     await seedMessages([
       {
         id: 'seed-1',
-        channelId: 'global:default',
+        channelId: 'global:preloaded',
         channelType: 'global',
         senderId: 'seed-user',
         senderDisplayName: 'Seeder',
@@ -85,7 +89,7 @@ describe('chat api integration (preloaded history)', () => {
       },
       {
         id: 'seed-2',
-        channelId: 'global:default',
+        channelId: 'global:preloaded',
         channelType: 'global',
         senderId: 'seed-user',
         senderDisplayName: 'Seeder',
@@ -96,7 +100,7 @@ describe('chat api integration (preloaded history)', () => {
       },
       {
         id: 'seed-3',
-        channelId: 'global:default',
+        channelId: 'global:preloaded',
         channelType: 'global',
         senderId: 'seed-user',
         senderDisplayName: 'Seeder',
@@ -111,7 +115,7 @@ describe('chat api integration (preloaded history)', () => {
 
     const res = await agent
       .get('/chat/messages')
-      .query({ channelId: 'global:default', limit: 50 })
+      .query({ channelId: 'global:preloaded', limit: 50 })
       .expect(200);
 
     const bodies = (res.body.messages as Array<{ body: string }>).map((m) => m.body);
