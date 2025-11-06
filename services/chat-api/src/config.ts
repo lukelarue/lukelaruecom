@@ -55,8 +55,10 @@ const parseNumber = (rawValue: string | undefined, defaultValue: number): number
   return Number.isFinite(parsed) ? parsed : defaultValue;
 };
 
+const defaultEmulator = (process.env.NODE_ENV ?? 'development') !== 'production';
 const devFlags = {
-  useFirestoreEmulator: parseBoolean(process.env.USE_FIRESTORE_EMULATOR, true),
+  // In production, default to NOT using the emulator unless explicitly enabled
+  useFirestoreEmulator: parseBoolean(process.env.USE_FIRESTORE_EMULATOR, defaultEmulator),
   firestoreEmulatorHost: process.env.FIRESTORE_EMULATOR_HOST ?? '127.0.0.1:8080',
 } as const;
 
