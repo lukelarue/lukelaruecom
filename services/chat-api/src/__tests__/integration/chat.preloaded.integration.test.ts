@@ -50,7 +50,7 @@ describe('chat api integration (preloaded history)', () => {
   beforeAll(async () => {
     process.env.NODE_ENV = 'test';
     process.env.PORT = '0';
-    process.env.GCP_PROJECT_ID = 'demo-firestore';
+    process.env.GCP_PROJECT_ID = 'demo-firestore-preloaded';
     process.env.USE_FIRESTORE_EMULATOR = 'true';
     process.env.FIRESTORE_EMULATOR_HOST = process.env.FIRESTORE_EMULATOR_HOST ?? 'localhost:8080';
 
