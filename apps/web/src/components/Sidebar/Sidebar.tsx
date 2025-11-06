@@ -9,7 +9,10 @@ export const Sidebar = () => {
   return (
     <div className="flex h-full flex-col">
       <header className="border-b border-zinc-800 px-4 py-4">
-        <h2 className="text-lg font-semibold">Chat</h2>
+        <div className="flex items-center gap-2">
+          <img src="/favicon.png" alt="LukeLaRue" className="h-6 w-6 rounded-sm" />
+          <h2 className="text-lg font-semibold">Chat</h2>
+        </div>
         <p className="text-xs text-zinc-400">Real-time lobby coming soon</p>
       </header>
       <div className="flex-1 overflow-y-auto px-4 py-6">

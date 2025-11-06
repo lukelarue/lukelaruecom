@@ -122,7 +122,8 @@ export const createHttpChatClient = ({
         return () => {};
       }
 
-      const sseBase = (normalizedBase + '/chat');
+      // Build SSE URL
+      const sseBase = normalizedBase + '/chat';
       const url = new URL(sseBase, window.location.origin);
       url.pathname = url.pathname.replace(/\/$/, '') + '/stream';
       url.searchParams.set('channelId', channelId);
@@ -131,35 +132,88 @@ export const createHttpChatClient = ({
         url.searchParams.set('userName', auth.userName);
       }
 
-      const es = new EventSource(url.toString());
-      const onMessage = (event: MessageEvent) => {
-        try {
-          const data = JSON.parse(event.data) as ChatMessage;
-          listener(data);
-        } catch {
-          // ignore malformed events
-        }
-      };
-      const onError = () => {
-        // Close on error; ChatContext will recreate on reselect or reload
-        try {
-          es.close();
-        } catch {
-          // noop
-        }
+      let cleanup: (() => void) | null = null;
+      let usingSSE = false;
+
+      const startSSE = () => {
+        const es = new EventSource(url.toString());
+        usingSSE = true;
+
+        const onMessage = (event: MessageEvent) => {
+          try {
+            const data = JSON.parse(event.data) as ChatMessage;
+            listener(data);
+          } catch {
+            // ignore malformed events
+          }
+        };
+        const onError = () => {
+          // If SSE errors early, fall back to polling
+          try {
+            es.close();
+          } catch {}
+          if (usingSSE) {
+            usingSSE = false;
+            cleanup = startPolling();
+          }
+        };
+
+        es.addEventListener('message', onMessage);
+        es.addEventListener('error', onError);
+
+        cleanup = () => {
+          try {
+            es.removeEventListener('message', onMessage as EventListener);
+            es.removeEventListener('error', onError as EventListener);
+            es.close();
+          } catch {}
+        };
+        return cleanup;
       };
 
-      es.addEventListener('message', onMessage);
-      es.addEventListener('error', onError);
+      const startPolling = () => {
+        let timer: ReturnType<typeof setInterval> | null = null;
+        let lastSeen: string | null = null;
 
+        const poll = async () => {
+          try {
+            const response = await client.get('messages', {
+              params: { channelId, limit: 50 },
+            });
+            const messages = ensureMessages(response.data.messages);
+            if (messages.length === 0) {
+              return;
+            }
+            if (!lastSeen) {
+              lastSeen = messages[messages.length - 1]!.createdAt;
+              return;
+            }
+            const newMessages = messages.filter((m) => m.createdAt > lastSeen!);
+            if (newMessages.length > 0) {
+              lastSeen = newMessages[newMessages.length - 1]!.createdAt;
+              for (const m of newMessages) listener(m);
+            }
+          } catch {
+            // ignore errors during polling
+          }
+        };
+
+        void poll();
+        timer = setInterval(() => void poll(), 3000);
+        return () => {
+          if (timer) clearInterval(timer);
+        };
+      };
+
+      // Start both SSE and polling; polling acts as a safety net
+      const sseCleanup = startSSE();
+      const pollCleanup = startPolling();
+      cleanup = () => {
+        if (sseCleanup) sseCleanup();
+        if (pollCleanup) pollCleanup();
+      };
       return () => {
-        try {
-          es.removeEventListener('message', onMessage as EventListener);
-          es.removeEventListener('error', onError as EventListener);
-          es.close();
-        } catch {
-          // noop
-        }
+        if (cleanup) cleanup();
       };
     },
   };
