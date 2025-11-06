@@ -4,6 +4,7 @@ import { Sidebar } from '@/components/Sidebar/Sidebar';
 import { renderWithRouter } from '@/test/test-utils';
 import { AuthContext, type AuthContextValue } from '@/context/AuthContext';
 import { vi, describe, it, expect } from 'vitest';
+import { ChatProvider } from '@/context/ChatContext';
 
 const createAuthContext = (overrides: Partial<AuthContextValue> = {}): AuthContextValue => ({
   session: null,
@@ -18,7 +19,9 @@ const createAuthContext = (overrides: Partial<AuthContextValue> = {}): AuthConte
 const renderSidebar = (authContext: AuthContextValue, options?: Parameters<typeof renderWithRouter>[1]) => {
   return renderWithRouter(
     <AuthContext.Provider value={authContext}>
-      <Sidebar />
+      <ChatProvider defaultChannel={{ channelType: 'global' }}>
+        <Sidebar />
+      </ChatProvider>
     </AuthContext.Provider>,
     options
   );
