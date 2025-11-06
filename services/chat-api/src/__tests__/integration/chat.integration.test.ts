@@ -38,11 +38,11 @@ describe('chat api integration (offline)', () => {
     process.env.USE_FIRESTORE_EMULATOR = 'true';
     process.env.FIRESTORE_EMULATOR_HOST = process.env.FIRESTORE_EMULATOR_HOST ?? 'localhost:8080';
 
-    const firestoreModule = await import('../../lib/firestore.js');
-    if (typeof (firestoreModule as any).resetFirestoreForTests === 'function') {
-      (firestoreModule as any).resetFirestoreForTests();
+    const { getFirestore, resetFirestoreForTests } = await import('../../lib/firestore.js');
+    if (typeof resetFirestoreForTests === 'function') {
+      resetFirestoreForTests();
     }
-    firestore = firestoreModule.getFirestore();
+    firestore = getFirestore();
 
     const { MessageStore } = await import('../../services/messageStore.js');
     const { createApp } = await import('../../app.js');

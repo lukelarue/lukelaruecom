@@ -51,11 +51,11 @@ describe('chat api integration (preloaded history)', () => {
     process.env.FIRESTORE_EMULATOR_HOST = process.env.FIRESTORE_EMULATOR_HOST ?? 'localhost:8080';
 
     // ensure a fresh Firestore client for this test file (distinct project)
-    const firestoreModule = await import('../../lib/firestore.js');
-    if (typeof (firestoreModule as any).resetFirestoreForTests === 'function') {
-      (firestoreModule as any).resetFirestoreForTests();
+    const { getFirestore, resetFirestoreForTests } = await import('../../lib/firestore.js');
+    if (typeof resetFirestoreForTests === 'function') {
+      resetFirestoreForTests();
     }
-    firestore = (firestoreModule as any).getFirestore();
+    firestore = getFirestore();
 
     const { MessageStore } = await import('../../services/messageStore.js');
     const { createApp } = await import('../../app.js');
