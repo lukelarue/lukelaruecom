@@ -32,6 +32,7 @@ export const ChatSidebar = () => {
   const [draft, setDraft] = useState('');
   const [sending, setSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
+  const formRef = useRef<HTMLFormElement | null>(null);
 
   const activeChannel = useMemo(() => channels.find((channel) => channel.channelId === activeChannelId), [
     channels,
@@ -102,7 +103,7 @@ export const ChatSidebar = () => {
         </div>
       </div>
 
-      <div className="flex flex-1 flex-col overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900/60">
+      <div className="flex flex-col overflow-hidden h-[50vh] rounded-2xl border border-zinc-800 bg-zinc-900/60">
         <div className="border-b border-zinc-800 px-4 py-3">
           <div className="text-sm font-medium text-zinc-200">
             {activeChannel ? formatChannel(activeChannel) : 'No channel selected'}
@@ -139,11 +140,19 @@ export const ChatSidebar = () => {
             </div>
           )}
         </div>
-        <form onSubmit={onSubmit} className="border-t border-zinc-800 p-3">
+        <form ref={formRef} onSubmit={onSubmit} className="border-t border-zinc-800 p-3">
           <div className="flex items-center gap-2">
             <textarea
               value={draft}
               onChange={(event) => setDraft(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' && !event.shiftKey) {
+                  event.preventDefault();
+                  if (!sending && activeChannel && draft.trim()) {
+                    formRef.current?.requestSubmit();
+                  }
+                }
+              }}
               className="h-16 w-full resize-none rounded-xl border border-zinc-800 bg-zinc-900/80 px-3 py-2 text-sm text-zinc-100 focus:border-brand focus:outline-none"
               placeholder="Say something nice…"
               disabled={sending || !activeChannel}
