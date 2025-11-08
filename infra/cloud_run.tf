@@ -47,6 +47,12 @@ resource "google_cloud_run_service" "frontend" {
     }
   }
 
+  lifecycle {
+    ignore_changes = [
+      template[0].spec[0].containers[0].image
+    ]
+  }
+
   traffic {
     percent         = 100
     latest_revision = true
@@ -153,6 +159,12 @@ resource "google_cloud_run_service" "login_api" {
     }
   }
 
+  lifecycle {
+    ignore_changes = [
+      template[0].spec[0].containers[0].image
+    ]
+  }
+
   traffic {
     percent         = 100
     latest_revision = true
@@ -216,6 +228,12 @@ resource "google_cloud_run_service" "chat_api" {
         }
       }
     }
+  }
+
+  lifecycle {
+    ignore_changes = [
+      template[0].spec[0].containers[0].image
+    ]
   }
 
   traffic {

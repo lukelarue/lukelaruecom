@@ -1,53 +1,97 @@
 # Web Frontend
 
-This package (`apps/web/`) contains the LukeLaRue gaming platform UI built with Vite, React, and TypeScript. The app can run fully mocked for design work or connect to the login and chat backends for end-to-end flows. Repository-wide setup steps live in the root `README.md`.
+This package (`apps/web/`) contains the LukeLaRue gaming platform UI built with Vite, React, and TypeScript. It can run fully mocked for design work or connect to the login and chat backends for end-to-end flows. Repository-wide setup steps live in the root `README.md`.
 
-## Prerequisites
+## HTTP endpoints used
 
-- Node.js 22 or newer (matching the workspace `engines` field)
-- npm 10+
-- Optional: running instances of the login API (`http://localhost:4000`) and chat API (`http://localhost:4100`) when exercising backend-backed features
-- Dependencies installed via `npm install` at the repo root (covers this workspace)
+- **Base URLs**
+  - Login API base URL: from `VITE_LOGIN_API_BASE_URL` (defaults to `/login-api` in production; typically `http://localhost:4000` in local backend mode).
+  - Chat API base URL: from `VITE_CHAT_API_BASE_URL` (defaults to `/chat-api`). All chat routes mount under `{chatBase}/chat`.
 
-## Environment configuration
+- **Login**
+  - `POST {loginBase}/auth/google` — Exchange Google ID token (or fake JSON in dev) for a session cookie.
+  - `GET {loginBase}/auth/session` — Recover current session via cookie.
+  - `POST {loginBase}/auth/signout` — Clear the session cookie.
 
-1. Copy `.env.example` to `.env`.
-2. Adjust the following keys as needed:
-   - `VITE_LOGIN_API_BASE_URL` – URL of the login API service.
-   - `VITE_GOOGLE_CLIENT_ID` – Google OAuth client ID (use the fake ID for local mock mode).
-   - `VITE_GOOGLE_LOGIN_MOCK` / `VITE_FAKE_GOOGLE_CREDENTIAL` – enable the fake Google flow when offline.
-3. Use `.env.frontend-mock` or `.env.backend` for per-mode overrides if required.
+- **Chat**
+  - `POST {chatBase}/chat/messages` — Send a message. The client adds `x-user-id` and `x-user-name` from the authenticated session.
+  - `GET {chatBase}/chat/messages` — Fetch history by descriptor or `channelId`.
+  - `GET {chatBase}/chat/channels` — List accessible channels.
+  - `GET {chatBase}/chat/stream?channelId=...` — SSE stream. Because headers can’t be set by `EventSource`, `userId`/`userName` are passed as query params.
 
-## Auth modes & dev servers
+## Operational notes
 
-Two npm scripts launch the UI in different auth modes:
+- **Auth & cookies**: The UI relies on an HTTP-only session cookie issued by the login API (`session_token` by default). Requests use `withCredentials` and require CORS to allow credentials.
+- **Chat availability**: If the chat API is unreachable, the in-app chat panel disables itself and shows a status message.
+- **CORS**: Backends read allowed origins from `WEB_APP_ORIGINS` (see their READMEs). Frontend calls must originate from an allowed domain.
+- **Dev proxying**: Vite proxies `/chat-api/*` to `http://localhost:4100` and rewrites the prefix; for login, prefer setting `VITE_LOGIN_API_BASE_URL=http://localhost:4000`.
+- **Static hosting**: Production image serves the Vite build via Nginx on port `8080`.
 
-- `npm run dev:mock` – starts Vite in the `frontend-mock` mode, using only local fake services.
-- `npm run dev:backend` – starts Vite in the `backend` mode and proxies auth requests to the login API configured in `.env`.
+## Development
 
-Both commands serve the app at `http://localhost:5173`. When the chat service is unreachable, the in-app chat panel disables itself and shows a status message.
+### Prerequisites
 
-## Common npm scripts
+- Node.js 22 and npm 10+
+- Optional: running login API (`http://localhost:4000`) and chat API (`http://localhost:4100`) for backend mode
+- Install repo dependencies at the root: `npm install`
+
+### Environment variables (local/dev)
+
+- `VITE_GOOGLE_CLIENT_ID` — Google OAuth client ID. Required for a production build; a fake ID is fine locally.
+- `VITE_LOGIN_API_BASE_URL` — Login API base URL. Defaults to `/login-api`; set to `http://localhost:4000` for local backend mode.
+- `VITE_CHAT_API_BASE_URL` — Chat API base URL. Defaults to `/chat-api` (Vite proxy handles local dev).
+- `VITE_AUTH_MODE` — `frontend-mock` or `backend`. Defaults to `frontend-mock` in dev, `backend` in prod. Legacy `VITE_AUTH_MOCK=true|false` is also supported.
+- `VITE_GOOGLE_LOGIN_MOCK` — When `true`, bypasses Google and uses a fake credential (defaults to `true` in dev).
+- `VITE_FAKE_GOOGLE_CREDENTIAL` — JSON string used in mock login (defaults to `{ "email":"dev-user@example.com","name":"Dev User" }`).
+
+An example file exists: `.env.example`. Typical local backend mode `.env`:
+
+```ini
+VITE_GOOGLE_CLIENT_ID=fake-google-client-id
+VITE_LOGIN_API_BASE_URL=http://localhost:4000
+VITE_CHAT_API_BASE_URL=/chat-api
+VITE_AUTH_MODE=backend
+VITE_GOOGLE_LOGIN_MOCK=false
+```
+
+### Local development
 
 | Command | Description |
 | --- | --- |
-| `npm run dev:mock` | Launches Vite with mocked auth flows. |
-| `npm run dev:backend` | Launches Vite with backend-auth mode (requires login API). |
-| `npm run build` | Type-checks and emits production assets into `dist/`. |
+| `npm run dev:mock` | Start Vite in `frontend-mock` mode (no real backends required). |
+| `npm run dev:backend` | Start Vite in `backend` mode. Set `VITE_LOGIN_API_BASE_URL=http://localhost:4000`. |
+| `npm run build` | Type-checks and builds the production bundle to `dist/`. |
 | `npm run preview` | Serves the production build for smoke testing. |
-| `npm run test` | Executes the Vitest unit suite once (same as `test:unit`). |
-| `npm run lint` | Runs ESLint across `src/`. |
-| `npm run test:watch` | Executes Vitest in watch mode; append `-- --run` for single-run. |
+| `npm run dev:stack` (repo root) | Start login API, chat API, and the emulator together with the frontend backend mode. |
 
-## Folder Highlights
+### Testing
 
-- `src/components/` – Shared UI components (buttons, layout, chat widgets).
-- `src/pages/` – Route-level screens such as the landing page and lobby.
-- `src/context/` and `src/hooks/` – Auth context provider (`AuthContext.shared.ts`) and `useAuthContext()` hook.
-- `src/services/` – HTTP clients for the login and chat APIs.
+| Command | Description |
+| --- | --- |
+| `npm run test:unit:frontend` (repo root) | Run unit tests. |
+| `npm --workspace apps/web run test:watch` | Watch unit tests. |
+| `npm --workspace apps/web run test:integration` | Run integration tests. |
 
-## Integration tips
+### Docker commands
 
-- The login flow expects a session cookie (`session_token` by default) issued by the login API. When running everything locally, start the full stack with `npm run dev:stack` from the repo root.
-- The chat client (`src/services/chat/httpClient.ts`) injects `x-user-id` and `x-user-name` headers based on the authenticated session; ensure the login API is issuing user IDs before attempting chat operations.
-- Update environment variables whenever backend URLs or credentials change to keep the frontend in sync.
+| Command | Description |
+| --- | --- |
+| `docker build -f apps/web/Dockerfile -t frontend:local --build-arg VITE_GOOGLE_CLIENT_ID=<id> .` | Build the production image (Nginx static site). |
+| `docker run --rm -p 8080:8080 frontend:local` | Run the production image locally. |
+
+## Production environment variables
+
+| Name | Where defined | Effective value (default) | Notes |
+| --- | --- | --- | --- |
+| `VITE_GOOGLE_CLIENT_ID` | `.github/workflows/api-image-publish.yml` as Docker `--build-arg` | A Google OAuth client ID string | Provided via GitHub repository variable. Required for CI build. |
+| `VITE_LOGIN_API_BASE_URL` | Not set in CI; code default | `/login-api` | GCLB routes `/login-api/*` to Cloud Run login API (see `infra/load_balancer.tf`). |
+| `VITE_CHAT_API_BASE_URL` | Not set in CI; code default | `/chat-api` | GCLB routes `/chat-api/*` to Cloud Run chat API. |
+| `VITE_AUTH_MODE` | Not set in CI | `backend` | Defaults based on build mode (prod). |
+| `VITE_GOOGLE_LOGIN_MOCK` | Not set in CI | `false` | Mock disabled in prod. |
+| `PORT` | Container runtime | `8080` | Nginx listens on 8080 inside the container. |
+
+## Authentication requirements
+
+- UI flows assume a valid session cookie from the login API (`session_token` by default).
+- Chat requests include `x-user-id`/`x-user-name` headers derived from the session; SSE subscriptions pass `userId`/`userName` as query params.
+- Ensure the login API is issuing user IDs before attempting chat operations.
