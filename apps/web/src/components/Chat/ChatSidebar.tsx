@@ -33,6 +33,7 @@ export const ChatSidebar = () => {
   const [sending, setSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const formRef = useRef<HTMLFormElement | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
   const activeChannel = useMemo(() => channels.find((channel) => channel.channelId === activeChannelId), [
     channels,
@@ -57,6 +58,9 @@ export const ChatSidebar = () => {
       setDraft('');
     } finally {
       setSending(false);
+      setTimeout(() => {
+        textareaRef.current?.focus();
+      }, 0);
     }
   };
 
@@ -143,6 +147,7 @@ export const ChatSidebar = () => {
         <form ref={formRef} onSubmit={onSubmit} className="border-t border-zinc-800 p-3">
           <div className="flex items-center gap-2">
             <textarea
+              ref={textareaRef}
               value={draft}
               onChange={(event) => setDraft(event.target.value)}
               onKeyDown={(event) => {
