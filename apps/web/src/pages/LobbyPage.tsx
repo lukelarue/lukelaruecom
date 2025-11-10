@@ -22,35 +22,37 @@ export const LobbyPage = () => {
           <h1 className="text-3xl font-semibold text-zinc-100">Main Lobby</h1>
           <p className="text-sm text-zinc-400">Choose a game to play.</p>
         </header>
-        <section className="flex flex-col gap-2">
-          <h2 className="text-xl font-semibold text-zinc-200">Your Status</h2>
-          <p className="text-sm text-zinc-400">You are signed in.</p>
-        </section>
         <section className="flex flex-col gap-4">
-          <div className="flex items-center gap-3 overflow-x-auto">
-            {games.map((g) => (
-              <button
-                key={g.id}
-                type="button"
-                onClick={() => setSelectedId(g.id)}
-                className={
-                  'flex h-20 w-20 shrink-0 flex-col items-center justify-center rounded-xl border text-sm transition ' +
-                  (selectedId === g.id
-                    ? 'border-brand bg-brand/20 text-brand'
-                    : 'border-zinc-800 bg-zinc-900/50 text-zinc-300 hover:border-zinc-700 hover:bg-zinc-900/80')
-                }
-                aria-pressed={selectedId === g.id}
-              >
-                {g.logo ? (
-                  <img src={g.logo} alt={g.name} className="h-10 w-10 rounded-sm object-cover" />
-                ) : (
-                  <div className="text-2xl" aria-hidden>
-                    {g.emoji}
-                  </div>
-                )}
-                <div className="mt-1 truncate px-2 text-xs">{g.name}</div>
-              </button>
-            ))}
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div className="flex items-center gap-3 overflow-x-auto md:flex-1 md:min-w-0">
+              {games.map((g) => (
+                <button
+                  key={g.id}
+                  type="button"
+                  onClick={() => setSelectedId(g.id)}
+                  className={
+                    'flex h-20 w-20 shrink-0 flex-col items-center justify-center rounded-xl border text-sm transition ' +
+                    (selectedId === g.id
+                      ? 'border-brand bg-brand/20 text-brand'
+                      : 'border-zinc-800 bg-zinc-900/50 text-zinc-300 hover:border-zinc-700 hover:bg-zinc-900/80')
+                  }
+                  aria-pressed={selectedId === g.id}
+                >
+                  {g.logo ? (
+                    <img src={g.logo} alt={g.name} className="h-10 w-10 rounded-sm object-cover" />
+                  ) : (
+                    <div className="text-2xl" aria-hidden>
+                      {g.emoji}
+                    </div>
+                  )}
+                  <div className="mt-1 truncate px-2 text-xs">{g.name}</div>
+                </button>
+              ))}
+            </div>
+            <div className="mt-2 md:mt-0 flex flex-col items-start md:items-end shrink-0">
+              <h2 className="text-xl font-semibold text-zinc-200">Your Status</h2>
+              <p className="text-sm text-zinc-400">You are signed in.</p>
+            </div>
           </div>
           <div className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-2 shadow-lg">
             <div className="h-[75vh] w-full overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950">

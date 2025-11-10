@@ -78,9 +78,8 @@ describe('offline integration (frontend)', () => {
       loginButton.click();
     });
 
-    const statusHeading = await screen.findByRole('heading', { level: 2, name: /your status/i }, { timeout: 5000 });
+    await screen.findByRole('heading', { level: 1, name: /main lobby/i }, { timeout: 5000 });
     expect(sendSpy).toHaveBeenCalled();
-    expect(statusHeading).toBeInTheDocument();
     sendSpy.mockRestore();
   });
 
@@ -113,8 +112,7 @@ describe('offline integration (frontend)', () => {
 
     renderWithRouter(<App />);
 
-    const statusHeadings = await screen.findAllByRole('heading', { level: 2, name: /your status/i }, { timeout: 5000 });
-    expect(statusHeadings.length).toBeGreaterThan(0);
+    await screen.findByRole('heading', { level: 1, name: /main lobby/i }, { timeout: 5000 });
     const restoredEmailNodes = screen.getAllByText(/restored@example.com/i);
     expect(restoredEmailNodes.length).toBeGreaterThan(0);
   });
