@@ -1,10 +1,8 @@
 import { useMemo, useState } from 'react';
 import { MainLayout } from '@/components/Layout/MainLayout';
-import { useAuthContext } from '@/hooks/useAuthContext';
 import { env } from '@/utils/env';
 
 export const LobbyPage = () => {
-  const { session } = useAuthContext();
   const games = useMemo(
     () => [
       { id: 'minesweeper', name: 'Minesweeper', url: env.minesweeperUrl, emoji: '💣' as const, logo: undefined as string | undefined },
