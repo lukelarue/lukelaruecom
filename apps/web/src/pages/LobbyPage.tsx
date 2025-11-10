@@ -22,6 +22,10 @@ export const LobbyPage = () => {
           <h1 className="text-3xl font-semibold text-zinc-100">Main Lobby</h1>
           <p className="text-sm text-zinc-400">Choose a game to play.</p>
         </header>
+        <section className="flex flex-col gap-2">
+          <h2 className="text-xl font-semibold text-zinc-200">Your Status</h2>
+          <p className="text-sm text-zinc-400">You are signed in.</p>
+        </section>
         <section className="flex flex-col gap-4">
           <div className="flex items-center gap-3 overflow-x-auto">
             {games.map((g) => (

@@ -94,21 +94,24 @@ export const ChatProvider = ({ children, defaultChannel }: ChatProviderProps) =>
     }
     try {
       const channelSummaries = await client.listChannels();
-      const finalSummaries = (() => {
+      const normalizedSummaries: ChatChannelSummary[] = Array.isArray(channelSummaries)
+        ? channelSummaries
+        : [];
+      const finalSummaries: ChatChannelSummary[] = (() => {
         if (!defaultChannel) {
-          return channelSummaries;
+          return normalizedSummaries;
         }
         const defaultId = resolveChannelId(defaultChannel);
-        const exists = channelSummaries.some((channel) => channel.channelId === defaultId);
+        const exists = normalizedSummaries.some((channel) => channel.channelId === defaultId);
         if (exists) {
-          return channelSummaries;
+          return normalizedSummaries;
         }
         const summary: ChatChannelSummary = {
           channelId: defaultId,
           channelType: defaultChannel.channelType,
           metadata: buildChannelMetadata(defaultChannel),
         };
-        return [...channelSummaries, summary];
+        return [...normalizedSummaries, summary];
       })();
 
       setChannels(finalSummaries);
@@ -143,10 +146,11 @@ export const ChatProvider = ({ children, defaultChannel }: ChatProviderProps) =>
       }
       return client.subscribe(channelId, (message) => {
         setMessages((prev) => {
-          if (prev.some((m) => m.id === message.id)) {
-            return prev;
+          const base = Array.isArray(prev) ? prev : [];
+          if (base.some((m) => m.id === message.id)) {
+            return base;
           }
-          const next = [...prev, message];
+          const next = [...base, message];
           return next.slice(-CHAT_HISTORY_LIMIT);
         });
       });
@@ -169,7 +173,8 @@ export const ChatProvider = ({ children, defaultChannel }: ChatProviderProps) =>
       try {
         const history = await client.fetchMessagesById(activeChannelId, CHAT_HISTORY_LIMIT);
         if (!cancelled) {
-          setMessages(history);
+          const normalized = Array.isArray(history) ? history : [];
+          setMessages(normalized);
           unsubscribe = subscribeToActiveChannel(activeChannelId);
           setDisabled(false);
         }
@@ -232,10 +237,11 @@ export const ChatProvider = ({ children, defaultChannel }: ChatProviderProps) =>
       try {
         const sent = await client.sendMessage(input);
         setMessages((prev) => {
-          if (prev.some((m) => m.id === sent.id)) {
-            return prev;
+          const base = Array.isArray(prev) ? prev : [];
+          if (base.some((m) => m.id === sent.id)) {
+            return base;
           }
-          const next = [...prev, sent];
+          const next = [...base, sent];
           return next.slice(-CHAT_HISTORY_LIMIT);
         });
         setError(null);
