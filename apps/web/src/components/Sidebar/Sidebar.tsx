@@ -57,6 +57,16 @@ export const Sidebar = () => {
             </button>
           ) : null}
         </div>
+        {session ? (
+          <div className="mt-3 text-xs text-zinc-400">
+            <div>
+              Signed in as <span className="text-zinc-300">{session.user.email}</span>
+            </div>
+            {session.user.lastLoginAt ? (
+              <div>Last login: {new Date(session.user.lastLoginAt).toLocaleString()}</div>
+            ) : null}
+          </div>
+        ) : null}
       </footer>
     </div>
   );
