@@ -95,6 +95,7 @@ Full-stack prototype for the LukeLaRue gaming experience. The monorepo houses a 
 | Command | Purpose |
 | --- | --- |
 | `npm run dev:stack` | Start Firestore, both APIs, and the frontend in backend-auth mode. |
+| `npm run dev:stack:all:win` | Windows: Start Firestore emulator, login-api (fake auth), chat-api, web, and Minesweeper together. |
 | `npm run dev:backend` | Start Firestore plus both APIs (no frontend). |
 | `npm run dev:frontend:mock` | Serve the frontend with mocked auth for UI work. |
 | `npm run dev:frontend:backend` | Serve the frontend pointed at the login API. |
@@ -102,6 +103,36 @@ Full-stack prototype for the LukeLaRue gaming experience. The monorepo houses a 
 | `npm run dev:firestore` | Launch only the shared Firestore emulator. |
 
 Each workspace README documents additional scripts, watch modes, and operational notes.
+
+#### Unified Local Dev (Windows)
+
+1. Install dependencies at repo root:
+   ```bash
+   npm install
+   ```
+2. Copy local envs (adjust as needed):
+   ```bash
+   cp apps/web/.env.example apps/web/.env
+   ```
+3. Run everything with one command:
+   ```bash
+   npm run dev:stack:all:win
+   ```
+4. Open http://localhost:5173
+
+What starts:
+
+- Web (Vite) at 5173
+- login-api at 4000 (fake Google auth enabled)
+- chat-api at 4100
+- Firestore emulator at 127.0.0.1:8080 (UI at 127.0.0.1:4001)
+- Minesweeper at 8000 (iframe: `VITE_MINESWEEPER_URL=http://localhost:8000`)
+
+Notes:
+
+- Web dev server proxies `/login-api` → 4000 and `/chat-api` → 4100.
+- All services share the same Firestore emulator project `demo-firestore`.
+- For additional games, add `VITE_<GAME>_URL` to `apps/web/.env` and a `dev:<game>:win` script at the repo root that starts the service on a unique port with the same emulator env.
 
 ### Testing & Linting
 
