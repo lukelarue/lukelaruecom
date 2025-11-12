@@ -5,6 +5,8 @@ WORKDIR /workspace
 
 ARG VITE_GOOGLE_CLIENT_ID
 ENV VITE_GOOGLE_CLIENT_ID=${VITE_GOOGLE_CLIENT_ID}
+ARG VITE_MINESWEEPER_URL
+ENV VITE_MINESWEEPER_URL=${VITE_MINESWEEPER_URL}
 
 # Install workspace dependencies and build the Vite bundle
 COPY package.json package-lock.json ./

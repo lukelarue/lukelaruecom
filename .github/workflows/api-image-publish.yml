@@ -49,6 +49,7 @@ jobs:
             dockerfile: apps/web/Dockerfile
             build_args: |
               VITE_GOOGLE_CLIENT_ID=${{ vars.VITE_GOOGLE_CLIENT_ID }}
+              VITE_MINESWEEPER_URL=${{ vars.VITE_MINESWEEPER_URL }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -67,12 +68,11 @@ jobs:
         if: matrix.service == 'frontend'
         env:
           VITE_GOOGLE_CLIENT_ID: ${{ vars.VITE_GOOGLE_CLIENT_ID }}
+          VITE_MINESWEEPER_URL: ${{ vars.VITE_MINESWEEPER_URL }}
         run: |
-          TRIMMED="$(printf '%s' "$VITE_GOOGLE_CLIENT_ID" | tr -d '[:space:]')"
-          if [ -z "$TRIMMED" ]; then
-            echo "Missing required repository variable: VITE_GOOGLE_CLIENT_ID" >&2
-            exit 1
-          fi
+          check_var() { name="$1"; val="$2"; trim="$(printf '%s' "$val" | tr -d '[:space:]')"; if [ -z "$trim" ]; then echo "Missing required repository variable: $name" >&2; exit 1; fi; }
+          check_var VITE_GOOGLE_CLIENT_ID "$VITE_GOOGLE_CLIENT_ID"
+          check_var VITE_MINESWEEPER_URL "$VITE_MINESWEEPER_URL"
 
       - id: auth
         name: Authenticate to Google Cloud
