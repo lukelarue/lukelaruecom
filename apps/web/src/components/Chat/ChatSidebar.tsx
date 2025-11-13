@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
+import { useLayoutEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { clsx } from 'clsx';
 
 import { useAuthContext } from '@/hooks/useAuthContext';
@@ -13,6 +13,23 @@ const formatTimestamp = (iso: string) => {
     hour: '2-digit',
     minute: '2-digit',
   }).format(date);
+};
+
+const isSameDay = (aIso: string | undefined, bIso: string | undefined) => {
+  if (!aIso || !bIso) return false;
+  const a = new Date(aIso);
+  const b = new Date(bIso);
+  return (
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate()
+  );
+};
+
+const formatDateSeparator = (iso: string) => {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return iso;
+  return new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' }).format(date);
 };
 
 export const ChatSidebar = () => {
@@ -31,7 +48,7 @@ export const ChatSidebar = () => {
 
   const [draft, setDraft] = useState('');
   const [sending, setSending] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement | null>(null);
+  const messagesContainerRef = useRef<HTMLDivElement | null>(null);
   const formRef = useRef<HTMLFormElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
@@ -40,12 +57,13 @@ export const ChatSidebar = () => {
     activeChannelId,
   ]);
 
-  useEffect(() => {
-    const element = messagesEndRef.current;
-    if (element && typeof element.scrollIntoView === 'function') {
-      element.scrollIntoView({ block: 'end', behavior: 'smooth' });
+  useLayoutEffect(() => {
+    const el = messagesContainerRef.current;
+    if (el) {
+      // Jump to bottom instantly without visible scrolling
+      el.scrollTop = el.scrollHeight;
     }
-  }, [messages]);
+  }, [activeChannelId, messages.length]);
 
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -116,31 +134,41 @@ export const ChatSidebar = () => {
             {loading ? 'Loading messages…' : error ?? 'Connected'}
           </div>
         </div>
-        <div className="flex-1 overflow-y-auto px-4 py-4">
+        <div ref={messagesContainerRef} className="flex-1 overflow-y-auto px-4 py-4">
           {messages.length === 0 ? (
             <div className="text-center text-xs text-zinc-500">Send the first message to get things started.</div>
           ) : (
             <div className="flex flex-col gap-3">
-              {messages.map((message) => {
+              {messages.map((message, idx) => {
                 const isSelf = message.senderId === session.user.id;
+                const prev = idx > 0 ? messages[idx - 1] : undefined;
+                const showDate = idx === 0 || !isSameDay(prev?.createdAt, message.createdAt);
                 return (
-                  <div key={message.id} className={clsx('flex flex-col gap-1 text-xs', isSelf ? 'items-end' : 'items-start')}>
-                    <div className="flex items-center gap-2 text-zinc-400">
-                      <span className="font-medium text-zinc-200">{message.senderDisplayName ?? message.senderId}</span>
-                      <span>{formatTimestamp(message.createdAt)}</span>
-                    </div>
-                    <div
-                      className={clsx(
-                        'max-w-full rounded-2xl px-3 py-2 text-sm',
-                        isSelf ? 'bg-brand text-zinc-950' : 'bg-zinc-800/80 text-zinc-100'
-                      )}
-                    >
-                      {message.body}
+                  <div key={message.id} className="flex flex-col gap-2">
+                    {showDate ? (
+                      <div className="my-2 flex items-center gap-3 text-[10px] uppercase tracking-wide text-zinc-500">
+                        <div className="h-px flex-1 bg-zinc-800" />
+                        <div className="shrink-0">{formatDateSeparator(message.createdAt)}</div>
+                        <div className="h-px flex-1 bg-zinc-800" />
+                      </div>
+                    ) : null}
+                    <div className={clsx('flex flex-col gap-1 text-xs', isSelf ? 'items-end' : 'items-start')}>
+                      <div className="flex items-center gap-2 text-zinc-400">
+                        <span className="font-medium text-zinc-200">{message.senderDisplayName ?? message.senderId}</span>
+                        <span>{formatTimestamp(message.createdAt)}</span>
+                      </div>
+                      <div
+                        className={clsx(
+                          'max-w-full rounded-2xl px-3 py-2 text-sm',
+                          isSelf ? 'bg-brand text-zinc-950' : 'bg-zinc-800/80 text-zinc-100'
+                        )}
+                      >
+                        {message.body}
+                      </div>
                     </div>
                   </div>
                 );
               })}
-              <div ref={messagesEndRef} />
             </div>
           )}
         </div>

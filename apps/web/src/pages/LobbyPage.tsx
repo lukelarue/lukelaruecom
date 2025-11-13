@@ -1,5 +1,4 @@
 import { useMemo, useState } from 'react';
-import { MainLayout } from '@/components/Layout/MainLayout';
 import { env } from '@/utils/env';
 
 export const LobbyPage = () => {
@@ -16,8 +15,7 @@ export const LobbyPage = () => {
   const selected = games.find((g) => g.id === selectedId) ?? defaultGame;
 
   return (
-    <MainLayout>
-      <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6">
         <header className="flex flex-col gap-2">
           <h1 className="text-3xl font-semibold text-zinc-100">Main Lobby</h1>
           <p className="text-sm text-zinc-400">Choose a game to play.</p>
@@ -49,10 +47,6 @@ export const LobbyPage = () => {
                 </button>
               ))}
             </div>
-            <div className="mt-2 md:mt-0 flex flex-col items-start md:items-end shrink-0">
-              <h2 className="text-xl font-semibold text-zinc-200">Your Status</h2>
-              <p className="text-sm text-zinc-400">You are signed in.</p>
-            </div>
           </div>
           <div className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-2 shadow-lg">
             <div className="h-[75vh] w-full overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950">
@@ -73,6 +67,5 @@ export const LobbyPage = () => {
           </div>
         </section>
       </div>
-    </MainLayout>
   );
 };

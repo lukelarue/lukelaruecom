@@ -1,4 +1,3 @@
-import { MainLayout } from '@/components/Layout/MainLayout';
 import { useAuthContext } from '@/hooks/useAuthContext';
 
 export const ProfilePage = () => {
@@ -11,8 +10,7 @@ export const ProfilePage = () => {
   const firstInitial = session.user.name?.[0]?.toUpperCase() ?? session.user.email[0]?.toUpperCase() ?? '?';
 
   return (
-    <MainLayout>
-      <div className="mx-auto flex max-w-3xl flex-col gap-10">
+    <div className="mx-auto flex max-w-3xl flex-col gap-10">
         <header className="flex flex-col gap-4">
           <h1 className="text-3xl font-semibold text-zinc-100">Your Profile</h1>
           <p className="text-sm text-zinc-400">Manage your personal information and upcoming gaming identity.</p>
@@ -50,6 +48,5 @@ export const ProfilePage = () => {
           </div>
         </section>
       </div>
-    </MainLayout>
   );
 };

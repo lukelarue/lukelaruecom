@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { Outlet } from 'react-router-dom';
 import { Sidebar } from '@/components/Sidebar/Sidebar';
 
 export const MainLayout = ({ children }: { children: ReactNode }) => {
@@ -9,5 +10,13 @@ export const MainLayout = ({ children }: { children: ReactNode }) => {
       </aside>
       <main className="flex-1 px-6 py-8 order-1">{children}</main>
     </div>
+  );
+};
+
+export const MainLayoutRoute = () => {
+  return (
+    <MainLayout>
+      <Outlet />
+    </MainLayout>
   );
 };

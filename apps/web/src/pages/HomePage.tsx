@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
 import { GoogleLogin } from '@react-oauth/google';
 import { useNavigate } from 'react-router-dom';
-import { MainLayout } from '@/components/Layout/MainLayout';
 import { LoadingScreen } from '@/components/LoadingScreen';
 import { useAuthContext } from '@/hooks/useAuthContext';
 import { env } from '@/utils/env';
@@ -19,8 +18,7 @@ export const HomePage = () => {
   const firstName = session?.user.name?.split(' ')[0] ?? 'Player';
 
   return (
-    <MainLayout>
-      <div className="flex flex-col gap-12">
+    <div className="flex flex-col gap-12">
         <section className="flex flex-col gap-6">
           <div>
             <h1 className="text-3xl font-semibold text-zinc-100">LukeLaRue Gaming Lobby</h1>
@@ -131,6 +129,5 @@ export const HomePage = () => {
           )}
         </section>
       </div>
-    </MainLayout>
   );
 };
