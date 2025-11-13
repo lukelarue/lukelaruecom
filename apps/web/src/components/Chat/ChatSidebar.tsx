@@ -1,4 +1,4 @@
-import { useLayoutEffect, useMemo, useRef, useState, type FormEvent } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { clsx } from 'clsx';
 
 import { useAuthContext } from '@/hooks/useAuthContext';
@@ -48,6 +48,7 @@ export const ChatSidebar = () => {
 
   const [draft, setDraft] = useState('');
   const [sending, setSending] = useState(false);
+  const [stickyDateLabel, setStickyDateLabel] = useState<string | null>(null);
   const messagesContainerRef = useRef<HTMLDivElement | null>(null);
   const formRef = useRef<HTMLFormElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
@@ -64,6 +65,64 @@ export const ChatSidebar = () => {
       el.scrollTop = el.scrollHeight;
     }
   }, [activeChannelId, messages.length]);
+
+  useEffect(() => {
+    const container = messagesContainerRef.current;
+    if (!container) {
+      setStickyDateLabel(null);
+      return;
+    }
+
+    const computeStickyDate = () => {
+      const headers = Array.from(
+        container.querySelectorAll<HTMLDivElement>('[data-date-header="true"]')
+      );
+
+      if (headers.length === 0) {
+        setStickyDateLabel(null);
+        return;
+      }
+
+      const containerRect = container.getBoundingClientRect();
+      const containerTop = containerRect.top;
+      const containerBottom = containerRect.bottom;
+
+      let currentHeader = headers[0];
+
+      for (const header of headers) {
+        const rect = header.getBoundingClientRect();
+        const offsetTop = rect.top - containerTop;
+        if (offsetTop <= 16) {
+          currentHeader = header;
+        } else {
+          break;
+        }
+      }
+
+      const rect = currentHeader.getBoundingClientRect();
+      const headerTop = rect.top;
+      const headerBottom = rect.bottom;
+
+      const isVisible = headerBottom > containerTop && headerTop < containerBottom;
+
+      if (isVisible) {
+        setStickyDateLabel(null);
+      } else {
+        const label = currentHeader.textContent?.trim() ?? null;
+        setStickyDateLabel(label && label.length > 0 ? label : null);
+      }
+    };
+
+    computeStickyDate();
+
+    container.addEventListener('scroll', computeStickyDate);
+    window.addEventListener('resize', computeStickyDate);
+
+    return () => {
+      container.removeEventListener('scroll', computeStickyDate);
+      window.removeEventListener('resize', computeStickyDate);
+    };
+  }, [messages, activeChannelId]);
 
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -135,6 +194,15 @@ export const ChatSidebar = () => {
           </div>
         </div>
         <div ref={messagesContainerRef} className="flex-1 overflow-y-auto px-4 py-4">
+          {stickyDateLabel ? (
+            <div className="sticky top-0 z-10 -mx-4 mb-2 bg-zinc-900/95 px-4 pt-1">
+              <div className="flex items-center gap-3 text-[10px] uppercase tracking-wide text-zinc-500">
+                <div className="h-px flex-1 bg-zinc-800" />
+                <div className="shrink-0">{stickyDateLabel}</div>
+                <div className="h-px flex-1 bg-zinc-800" />
+              </div>
+            </div>
+          ) : null}
           {messages.length === 0 ? (
             <div className="text-center text-xs text-zinc-500">Send the first message to get things started.</div>
           ) : (
@@ -146,7 +214,10 @@ export const ChatSidebar = () => {
                 return (
                   <div key={message.id} className="flex flex-col gap-2">
                     {showDate ? (
-                      <div className="my-2 flex items-center gap-3 text-[10px] uppercase tracking-wide text-zinc-500">
+                      <div
+                        data-date-header="true"
+                        className="my-2 flex items-center gap-3 text-[10px] uppercase tracking-wide text-zinc-500"
+                      >
                         <div className="h-px flex-1 bg-zinc-800" />
                         <div className="shrink-0">{formatDateSeparator(message.createdAt)}</div>
                         <div className="h-px flex-1 bg-zinc-800" />
