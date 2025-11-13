@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { env } from '@/utils/env';
 
 export const LobbyPage = () => {
@@ -13,6 +13,12 @@ export const LobbyPage = () => {
   const defaultGame = games.find((g) => g.url) ?? games[0];
   const [selectedId, setSelectedId] = useState(defaultGame.id);
   const selected = games.find((g) => g.id === selectedId) ?? defaultGame;
+
+  const [iframeLoading, setIframeLoading] = useState(!!defaultGame.url);
+
+  useEffect(() => {
+    setIframeLoading(!!selected.url);
+  }, [selected.url]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -49,15 +55,26 @@ export const LobbyPage = () => {
             </div>
           </div>
           <div className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-2 shadow-lg">
-            <div className="h-[75vh] w-full overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950">
+            <div className="relative h-[75vh] w-full overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950">
               {selected.url ? (
-                <iframe
-                  key={selected.id + selected.url}
-                  title={selected.name}
-                  src={selected.url}
-                  className="h-full w-full"
-                  allowFullScreen
-                />
+                <>
+                  {iframeLoading && (
+                    <div className="absolute inset-0 z-10 flex items-center justify-center bg-zinc-950">
+                      <div className="flex flex-col items-center gap-2 text-sm text-zinc-300">
+                        <div className="h-6 w-6 animate-spin rounded-full border-2 border-zinc-600 border-t-transparent" />
+                        <div>Loading {selected.name}...</div>
+                      </div>
+                    </div>
+                  )}
+                  <iframe
+                    key={selected.id + selected.url}
+                    title={selected.name}
+                    src={selected.url}
+                    className="h-full w-full"
+                    allowFullScreen
+                    onLoad={() => setIframeLoading(false)}
+                  />
+                </>
               ) : (
                 <div className="flex h-full w-full items-center justify-center text-sm text-zinc-400">
                   {selected.name} is coming soon
