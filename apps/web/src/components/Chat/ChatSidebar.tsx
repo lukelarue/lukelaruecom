@@ -85,7 +85,6 @@ export const ChatSidebar = () => {
 
       const containerRect = container.getBoundingClientRect();
       const containerTop = containerRect.top;
-      const containerBottom = containerRect.bottom;
 
       let currentHeader = headers[0];
 
@@ -99,18 +98,8 @@ export const ChatSidebar = () => {
         }
       }
 
-      const rect = currentHeader.getBoundingClientRect();
-      const headerTop = rect.top;
-      const headerBottom = rect.bottom;
-
-      const isVisible = headerBottom > containerTop && headerTop < containerBottom;
-
-      if (isVisible) {
-        setStickyDateLabel(null);
-      } else {
-        const label = currentHeader.textContent?.trim() ?? null;
-        setStickyDateLabel(label && label.length > 0 ? label : null);
-      }
+      const label = currentHeader.textContent?.trim() ?? null;
+      setStickyDateLabel(label && label.length > 0 ? label : null);
     };
 
     computeStickyDate();
@@ -193,16 +182,16 @@ export const ChatSidebar = () => {
             {loading ? 'Loading messages…' : error ?? 'Connected'}
           </div>
         </div>
-        <div ref={messagesContainerRef} className="flex-1 overflow-y-auto px-4 py-4">
-          {stickyDateLabel ? (
-            <div className="sticky top-0 z-10 -mx-4 mb-2 bg-zinc-900/95 px-4 pt-1">
-              <div className="flex items-center gap-3 text-[10px] uppercase tracking-wide text-zinc-500">
-                <div className="h-px flex-1 bg-zinc-800" />
-                <div className="shrink-0">{stickyDateLabel}</div>
-                <div className="h-px flex-1 bg-zinc-800" />
-              </div>
+        {stickyDateLabel ? (
+          <div className="border-b border-zinc-800 px-4 py-2">
+            <div className="flex items-center gap-3 text-[10px] uppercase tracking-wide text-zinc-500">
+              <div className="h-px flex-1 bg-zinc-800" />
+              <div className="shrink-0">{stickyDateLabel}</div>
+              <div className="h-px flex-1 bg-zinc-800" />
             </div>
-          ) : null}
+          </div>
+        ) : null}
+        <div ref={messagesContainerRef} className="flex-1 overflow-y-auto px-4 py-4">
           {messages.length === 0 ? (
             <div className="text-center text-xs text-zinc-500">Send the first message to get things started.</div>
           ) : (
