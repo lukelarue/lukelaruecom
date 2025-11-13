@@ -1,12 +1,18 @@
 import { useEffect, useMemo, useState } from 'react';
 import { env } from '@/utils/env';
+import { useAuthContext } from '@/hooks/useAuthContext';
 
 export const LobbyPage = () => {
+  const { session } = useAuthContext();
+  const userEmail = session?.user.email;
+  const userId = session?.user.id;
+  const userKey = userEmail || userId;
+  const userName = session?.user.name;
   const games = useMemo(
     () => [
       { id: 'minesweeper', name: 'Minesweeper', url: env.minesweeperUrl, emoji: '💣' as const, logo: undefined as string | undefined },
-      { id: 'chess', name: 'Chess', url: env.chessUrl, emoji: '♟️' as const, logo: undefined as string | undefined },
-      { id: 'poker', name: 'Poker', url: env.pokerUrl, emoji: '♠️' as const, logo: undefined as string | undefined },
+      { id: 'lo-siento', name: '¡Lo Siento!', url: env.chessUrl, emoji: '' as const, logo: undefined as string | undefined },
+      { id: 'larves-block-party', name: "Larve's Block Party", url: env.pokerUrl, emoji: '' as const, logo: undefined as string | undefined },
     ],
     []
   );
@@ -19,6 +25,21 @@ export const LobbyPage = () => {
   useEffect(() => {
     setIframeLoading(!!selected.url);
   }, [selected.url]);
+
+  const selectedSrc = useMemo(() => {
+    if (!selected.url) return selected.url;
+    if (selected.id === 'minesweeper' && userKey) {
+      const sep = selected.url.includes('?') ? '&' : '?';
+      const encodedId = encodeURIComponent(userKey);
+      const base = `${selected.url}${sep}x-user-id=${encodedId}`;
+      if (userName) {
+        const encodedName = encodeURIComponent(userName);
+        return `${base}&x-user-name=${encodedName}`;
+      }
+      return base;
+    }
+    return selected.url;
+  }, [selected.id, selected.url, userKey, userName]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -44,11 +65,11 @@ export const LobbyPage = () => {
                 >
                   {g.logo ? (
                     <img src={g.logo} alt={g.name} className="h-10 w-10 rounded-sm object-cover" />
-                  ) : (
+                  ) : g.emoji ? (
                     <div className="text-2xl" aria-hidden>
                       {g.emoji}
                     </div>
-                  )}
+                  ) : null}
                   <div className="mt-1 truncate px-2 text-xs">{g.name}</div>
                 </button>
               ))}
@@ -67,9 +88,9 @@ export const LobbyPage = () => {
                     </div>
                   )}
                   <iframe
-                    key={selected.id + selected.url}
+                    key={selected.id + (selectedSrc ?? selected.url ?? '')}
                     title={selected.name}
-                    src={selected.url}
+                    src={selectedSrc ?? selected.url}
                     className="h-full w-full"
                     allowFullScreen
                     onLoad={() => setIframeLoading(false)}

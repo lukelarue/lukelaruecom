@@ -2,8 +2,8 @@ const loginApiBaseUrl = import.meta.env.VITE_LOGIN_API_BASE_URL ?? '/login-api';
 const chatApiBaseUrl = import.meta.env.VITE_CHAT_API_BASE_URL ?? '/chat-api';
 const googleClientId = (import.meta.env.VITE_GOOGLE_CLIENT_ID ?? '').trim();
 const minesweeperUrl = import.meta.env.VITE_MINESWEEPER_URL ?? '';
-const chessUrl = import.meta.env.VITE_CHESS_URL ?? '';
-const pokerUrl = import.meta.env.VITE_POKER_URL ?? '';
+const chessUrl = import.meta.env.VITE_CHESS_URL || '/placeholders/lo-siento.html';
+const pokerUrl = import.meta.env.VITE_POKER_URL || '/placeholders/larves-block-party.html';
 
 const resolveAuthMode = (): 'frontend-mock' | 'backend' => {
   if (import.meta.env.VITEST) {
