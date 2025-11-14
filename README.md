@@ -134,6 +134,15 @@ Notes:
 - All services share the same Firestore emulator project `demo-firestore`.
 - For additional games, add `VITE_<GAME>_URL` to `apps/web/.env` and a `dev:<game>:win` script at the repo root that starts the service on a unique port with the same emulator env.
 
+#### Minesweeper identity (how boards are keyed per user)
+
+- The external Minesweeper service lives in a separate repo and is embedded via an iframe whose URL is configured by `VITE_MINESWEEPER_URL`.
+- When a user is signed in (via `AuthSession`), the lobby page appends their identity to the Minesweeper iframe URL as query parameters:
+  - `x-user-id` → `session.user.email` when available (otherwise `session.user.id`)
+  - `x-user-name` → `session.user.name` (optional, for display)
+- The Minesweeper frontend reads these query parameters and sends them back to its API as an `X-User-Id` header.
+- The Minesweeper backend uses that `X-User-Id` value as the Firestore document key for game state, so each logged-in user (email) gets their own board and cannot see or affect another user's game.
+
 ### Testing & Linting
 
 | Command | Scope |
