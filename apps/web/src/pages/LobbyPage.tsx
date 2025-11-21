@@ -11,8 +11,8 @@ export const LobbyPage = () => {
   const games = useMemo(
     () => [
       { id: 'minesweeper', name: 'Minesweeper', url: env.minesweeperUrl, emoji: '💣' as const, logo: undefined as string | undefined },
-      { id: 'lo-siento', name: '¡Lo Siento!', url: env.chessUrl, emoji: '' as const, logo: undefined as string | undefined },
-      { id: 'larves-block-party', name: "Larve's Block Party", url: env.pokerUrl, emoji: '' as const, logo: undefined as string | undefined },
+      { id: 'lo-siento', name: '¡Lo Siento!', url: env.losientoUrl, emoji: '' as const, logo: undefined as string | undefined },
+      { id: 'larves-block-party', name: "Larve's Block Party", url: env.larvesBlockPartyUrl, emoji: '' as const, logo: undefined as string | undefined },
     ],
     []
   );

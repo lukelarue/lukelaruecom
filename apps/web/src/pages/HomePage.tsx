@@ -117,7 +117,7 @@ export const HomePage = () => {
                   </li>
                   <li className="flex items-center gap-2">
                     <span className="h-2 w-2 rounded-full bg-brand" aria-hidden />
-                    Game launcher with Minesweeper, chess, poker, and more.
+                    Game launcher with Minesweeper, ¡Lo Siento!, and Larve's Block Party.
                   </li>
                   <li className="flex items-center gap-2">
                     <span className="h-2 w-2 rounded-full bg-brand" aria-hidden />
