@@ -43,10 +43,6 @@ export const LobbyPage = () => {
 
   return (
     <div className="flex flex-col gap-6">
-        <header className="flex flex-col gap-2">
-          <h1 className="text-3xl font-semibold text-zinc-100">Main Lobby</h1>
-          <p className="text-sm text-zinc-400">Choose a game to play.</p>
-        </header>
         <section className="flex flex-col gap-4">
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div className="flex items-center gap-3 overflow-x-auto md:flex-1 md:min-w-0">
@@ -76,7 +72,7 @@ export const LobbyPage = () => {
             </div>
           </div>
           <div className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-2 shadow-lg">
-            <div className="relative h-[75vh] w-full overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950">
+            <div className="relative h-[80vh] w-full overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950">
               {selected.url ? (
                 <>
                   {iframeLoading && (

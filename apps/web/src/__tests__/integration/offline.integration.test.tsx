@@ -78,7 +78,7 @@ describe('offline integration (frontend)', () => {
       loginButton.click();
     });
 
-    await screen.findByRole('heading', { level: 1, name: /main lobby/i }, { timeout: 5000 });
+    await screen.findByRole('button', { name: /minesweeper/i }, { timeout: 5000 });
     expect(sendSpy).toHaveBeenCalled();
     sendSpy.mockRestore();
   });
@@ -112,7 +112,7 @@ describe('offline integration (frontend)', () => {
 
     renderWithRouter(<App />);
 
-    await screen.findByRole('heading', { level: 1, name: /main lobby/i }, { timeout: 5000 });
+    await screen.findByRole('button', { name: /minesweeper/i }, { timeout: 5000 });
     const restoredEmailNodes = screen.getAllByText(/restored@example.com/i);
     expect(restoredEmailNodes.length).toBeGreaterThan(0);
   });
