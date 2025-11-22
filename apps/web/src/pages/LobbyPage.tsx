@@ -28,7 +28,7 @@ export const LobbyPage = () => {
 
   const selectedSrc = useMemo(() => {
     if (!selected.url) return selected.url;
-    if (selected.id === 'minesweeper' && userKey) {
+    if ((selected.id === 'minesweeper' || selected.id === 'lo-siento') && userKey) {
       const sep = selected.url.includes('?') ? '&' : '?';
       const encodedId = encodeURIComponent(userKey);
       const base = `${selected.url}${sep}x-user-id=${encodedId}`;
