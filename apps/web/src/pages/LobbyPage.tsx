@@ -61,7 +61,7 @@ export const LobbyPage = () => {
 
   return (
     <div className="flex flex-col gap-6">
-        <section className="flex flex-col gap-4">
+        <section className="flex flex-col gap-4 -mt-4">
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div className="flex items-center gap-3 overflow-x-auto md:flex-1 md:min-w-0">
               {games.map((g) => (
@@ -70,7 +70,7 @@ export const LobbyPage = () => {
                   type="button"
                   onClick={() => setSelectedId(g.id)}
                   className={
-                    'flex h-20 w-20 shrink-0 flex-col items-center justify-center rounded-xl border text-sm transition ' +
+                    'flex h-16 w-16 shrink-0 flex-col items-center justify-center rounded-xl border text-xs transition ' +
                     (selectedId === g.id
                       ? 'border-brand bg-brand/20 text-brand'
                       : 'border-zinc-800 bg-zinc-900/50 text-zinc-300 hover:border-zinc-700 hover:bg-zinc-900/80')
@@ -78,7 +78,7 @@ export const LobbyPage = () => {
                   aria-pressed={selectedId === g.id}
                 >
                   {g.logo ? (
-                    <img src={g.logo} alt={g.name} className="h-10 w-10 rounded-sm object-cover" />
+                    <img src={g.logo} alt={g.name} className="h-8 w-8 rounded-sm object-cover" />
                   ) : g.emoji ? (
                     <div className="text-2xl" aria-hidden>
                       {g.emoji}
@@ -90,7 +90,7 @@ export const LobbyPage = () => {
             </div>
           </div>
           <div className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-2 shadow-lg">
-            <div className="relative h-[80vh] w-full overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950">
+            <div className="relative h-[88vh] w-full overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950">
               {selected.url ? (
                 <>
                   {iframeLoading && (
