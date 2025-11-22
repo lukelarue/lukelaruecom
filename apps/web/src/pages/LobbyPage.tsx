@@ -10,9 +10,27 @@ export const LobbyPage = () => {
   const userName = session?.user.name;
   const games = useMemo(
     () => [
-      { id: 'minesweeper', name: 'Minesweeper', url: env.minesweeperUrl, emoji: '💣' as const, logo: undefined as string | undefined },
-      { id: 'lo-siento', name: '¡Lo Siento!', url: env.losientoUrl, emoji: '' as const, logo: undefined as string | undefined },
-      { id: 'larves-block-party', name: "Larve's Block Party", url: env.larvesBlockPartyUrl, emoji: '' as const, logo: undefined as string | undefined },
+      {
+        id: 'minesweeper',
+        name: 'Minesweeper',
+        url: env.minesweeperUrl,
+        emoji: '💣' as const,
+        logo: '/assets/minesweeper_icon.png',
+      },
+      {
+        id: 'lo-siento',
+        name: '¡Lo Siento!',
+        url: env.losientoUrl,
+        emoji: '' as const,
+        logo: '/assets/losiento_icon.png',
+      },
+      {
+        id: 'larves-block-party',
+        name: "Larve's Block Party",
+        url: env.larvesBlockPartyUrl,
+        emoji: '' as const,
+        logo: undefined as string | undefined,
+      },
     ],
     []
   );
