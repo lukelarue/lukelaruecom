@@ -99,8 +99,8 @@ export const LobbyPage = () => {
                 'flex h-16 w-28 shrink-0 flex-col items-center justify-center rounded-xl border text-xs transition-all duration-200 ' +
                 (g.id === 'lo-siento'
                   ? selectedId === g.id
-                    ? 'border-zinc-950 text-amber-600 font-bold'
-                    : 'border-zinc-950 text-amber-600 hover:border-zinc-800'
+                    ? 'border-zinc-950 text-yellow-500 font-bold'
+                    : 'border-zinc-950 text-yellow-500 hover:border-zinc-800'
                   : selectedId === g.id
                     ? 'border-zinc-950 text-zinc-300 font-bold'
                     : 'border-zinc-950 text-zinc-300 hover:border-zinc-800')
