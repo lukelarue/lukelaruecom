@@ -18,7 +18,7 @@ export const MainLayout = ({ children }: { children: ReactNode }) => {
       <button
         type="button"
         onClick={() => setChatVisible((prev) => !prev)}
-        className="fixed right-0 top-1/2 z-50 -translate-y-1/2 rounded-l-lg border border-r-0 border-zinc-700 bg-zinc-800 px-1.5 py-3 text-xs text-zinc-300 transition hover:bg-zinc-700"
+        className="fixed right-0 top-1/2 z-50 -translate-y-1/2 rounded-l-lg border border-r-0 border-zinc-700 bg-zinc-800 px-2.5 py-6 text-base text-zinc-300 transition hover:bg-zinc-700"
         aria-label={chatVisible ? 'Hide chat' : 'Show chat'}
       >
         {chatVisible ? '›' : '‹'}
