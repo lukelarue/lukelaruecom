@@ -6,10 +6,10 @@ export const MainLayout = ({ children }: { children: ReactNode }) => {
   const [chatVisible, setChatVisible] = useState(true);
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 flex">
-      <main className="flex-1 px-6 py-4 order-1 overflow-hidden">{children}</main>
+    <div className="h-screen overflow-hidden bg-zinc-950 text-zinc-100 flex">
+      <main className="flex-1 px-6 py-4 order-1 overflow-y-auto">{children}</main>
       <aside
-        className={`border-l border-zinc-800 bg-zinc-900 order-2 transition-all duration-300 ${
+        className={`border-l border-zinc-800 bg-zinc-900 order-2 transition-all duration-300 flex flex-col ${
           chatVisible ? 'w-80' : 'w-0'
         }`}
       >
