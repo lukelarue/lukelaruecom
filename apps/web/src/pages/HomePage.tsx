@@ -44,6 +44,8 @@ const RealGoogleLoginButton = ({ onLogin }: { onLogin: (credential: string) => v
       shape="pill"
       theme="outline"
       text="signin_with"
+      auto_select={false}
+      use_fedcm_for_prompt={false}
     />
   );
 };
