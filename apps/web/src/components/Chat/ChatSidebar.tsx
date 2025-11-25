@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState, type FormEvent } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type FormEvent } from 'react';
 import { clsx } from 'clsx';
 
 import { useAuthContext } from '@/hooks/useAuthContext';
@@ -35,15 +35,12 @@ const formatDateSeparator = (iso: string) => {
 export const ChatSidebar = () => {
   const { session } = useAuthContext();
   const {
-    channels,
     activeChannelId,
-    setActiveChannel,
     messages,
     loading,
     disabled,
     error,
     sendMessage,
-    formatChannel,
   } = useChatContext();
 
   const [draft, setDraft] = useState('');
@@ -52,11 +49,6 @@ export const ChatSidebar = () => {
   const messagesContainerRef = useRef<HTMLDivElement | null>(null);
   const formRef = useRef<HTMLFormElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
-
-  const activeChannel = useMemo(() => channels.find((channel) => channel.channelId === activeChannelId), [
-    channels,
-    activeChannelId,
-  ]);
 
   useLayoutEffect(() => {
     const el = messagesContainerRef.current;
@@ -147,37 +139,10 @@ export const ChatSidebar = () => {
   }
 
   return (
-    <div className="flex h-full flex-col gap-4">
-      <div>
-        <h3 className="text-sm font-semibold text-zinc-300">Channels</h3>
-        <div className="mt-3 flex flex-wrap gap-2">
-          {channels.length === 0 ? (
-            <span className="text-xs text-zinc-500">No channels available yet.</span>
-          ) : (
-            channels.map((channel) => (
-              <button
-                key={channel.channelId}
-                type="button"
-                className={clsx(
-                  'rounded-full border border-zinc-800 px-3 py-1 text-xs transition',
-                  channel.channelId === activeChannelId
-                    ? 'bg-brand text-zinc-950 font-semibold'
-                    : 'bg-zinc-900/70 text-zinc-300 hover:bg-zinc-800 hover:text-white'
-                )}
-                onClick={() => setActiveChannel({ channelId: channel.channelId })}
-              >
-                {formatChannel(channel)}
-              </button>
-            ))
-          )}
-        </div>
-      </div>
-
-      <div className="flex flex-col overflow-hidden h-[50vh] rounded-2xl border border-zinc-800 bg-zinc-900/60">
+    <div className="flex h-full flex-col">
+      <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900/60">
         <div className="border-b border-zinc-800 px-4 py-3">
-          <div className="text-sm font-medium text-zinc-200">
-            {activeChannel ? formatChannel(activeChannel) : 'No channel selected'}
-          </div>
+          <div className="text-sm font-medium text-zinc-200">Chat</div>
           <div className="text-xs text-zinc-500">
             {loading ? 'Loading messages…' : error ?? 'Connected'}
           </div>
@@ -220,7 +185,7 @@ export const ChatSidebar = () => {
                       <div
                         className={clsx(
                           'max-w-full rounded-2xl px-3 py-2 text-sm',
-                          isSelf ? 'bg-brand text-zinc-950' : 'bg-zinc-800/80 text-zinc-100'
+                          isSelf ? 'bg-brand text-white' : 'bg-zinc-800/80 text-zinc-100'
                         )}
                       >
                         {message.body}
@@ -241,19 +206,19 @@ export const ChatSidebar = () => {
               onKeyDown={(event) => {
                 if (event.key === 'Enter' && !event.shiftKey) {
                   event.preventDefault();
-                  if (!sending && activeChannel && draft.trim()) {
+                  if (!sending && activeChannelId && draft.trim()) {
                     formRef.current?.requestSubmit();
                   }
                 }
               }}
               className="h-16 w-full resize-none rounded-xl border border-zinc-800 bg-zinc-900/80 px-3 py-2 text-sm text-zinc-100 focus:border-brand focus:outline-none"
               placeholder="Say something nice…"
-              disabled={sending || !activeChannel}
+              disabled={sending || !activeChannelId}
             />
             <button
               type="submit"
-              disabled={sending || !draft.trim() || !activeChannel}
-              className="rounded-xl bg-brand px-4 py-2 text-sm font-semibold text-zinc-950 transition hover:bg-brand/90 disabled:cursor-not-allowed disabled:opacity-60"
+              disabled={sending || !draft.trim() || !activeChannelId}
+              className="rounded-xl bg-brand px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand/90 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {sending ? 'Sending…' : 'Send'}
             </button>

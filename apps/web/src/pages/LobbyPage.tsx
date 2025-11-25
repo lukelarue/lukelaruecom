@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { env } from '@/utils/env';
 import { useAuthContext } from '@/hooks/useAuthContext';
+import { ProfileContent } from '@/pages/ProfilePage';
 
 export const LobbyPage = () => {
   const { session } = useAuthContext();
@@ -34,18 +35,21 @@ export const LobbyPage = () => {
     ],
     []
   );
-  const defaultGame = games.find((g) => g.url) ?? games[0];
-  const [selectedId, setSelectedId] = useState(defaultGame.id);
-  const selected = games.find((g) => g.id === selectedId) ?? defaultGame;
 
-  const [iframeLoading, setIframeLoading] = useState(!!defaultGame.url);
+  // Default to profile (logo tile) on load
+  const [selectedId, setSelectedId] = useState('profile');
+  const selected = games.find((g) => g.id === selectedId);
+
+  const [iframeLoading, setIframeLoading] = useState(false);
 
   useEffect(() => {
-    setIframeLoading(!!selected.url);
-  }, [selected.url]);
+    if (selected?.url) {
+      setIframeLoading(true);
+    }
+  }, [selected?.url]);
 
   const selectedSrc = useMemo(() => {
-    if (!selected.url) return selected.url;
+    if (!selected?.url) return undefined;
     if ((selected.id === 'minesweeper' || selected.id === 'lo-siento') && userKey) {
       const sep = selected.url.includes('?') ? '&' : '?';
       const encodedId = encodeURIComponent(userKey);
@@ -57,67 +61,111 @@ export const LobbyPage = () => {
       return base;
     }
     return selected.url;
-  }, [selected.id, selected.url, userKey, userName]);
+  }, [selected?.id, selected?.url, userKey, userName]);
+
+  const isProfile = selectedId === 'profile';
+
+  // Custom tile backgrounds
+  const tileBackgrounds: Record<string, React.CSSProperties> = {
+    minesweeper: {
+      background: `repeating-linear-gradient(
+        45deg,
+        #27272a,
+        #27272a 4px,
+        #18181b 4px,
+        #18181b 8px
+      )`,
+    },
+    'lo-siento': {
+      background: 'linear-gradient(to right, #006847 0%, #006847 33%, #ffffff 33%, #ffffff 66%, #ce1126 66%, #ce1126 100%)',
+    },
+  };
 
   return (
     <div className="flex flex-col gap-6">
-        <section className="flex flex-col gap-4 -mt-4">
-          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-            <div className="flex items-center gap-3 overflow-x-auto md:flex-1 md:min-w-0">
-              {games.map((g) => (
-                <button
-                  key={g.id}
-                  type="button"
-                  onClick={() => setSelectedId(g.id)}
-                  className={
-                    'flex h-16 w-16 shrink-0 flex-col items-center justify-center rounded-xl border text-xs transition ' +
-                    (selectedId === g.id
-                      ? 'border-brand bg-brand/20 text-brand'
-                      : 'border-zinc-800 bg-zinc-900/50 text-zinc-300 hover:border-zinc-700 hover:bg-zinc-900/80')
-                  }
-                  aria-pressed={selectedId === g.id}
-                >
-                  {g.logo ? (
-                    <img src={g.logo} alt={g.name} className="h-8 w-8 rounded-sm object-cover" />
-                  ) : g.emoji ? (
-                    <div className="text-2xl" aria-hidden>
-                      {g.emoji}
-                    </div>
-                  ) : null}
-                  <div className="mt-1 truncate px-2 text-xs">{g.name}</div>
-                </button>
-              ))}
-            </div>
-          </div>
-          <div className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-2 shadow-lg">
-            <div className="relative h-[88vh] w-full overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950">
-              {selected.url ? (
-                <>
-                  {iframeLoading && (
-                    <div className="absolute inset-0 z-10 flex items-center justify-center bg-zinc-950">
-                      <div className="flex flex-col items-center gap-2 text-sm text-zinc-300">
-                        <div className="h-6 w-6 animate-spin rounded-full border-2 border-zinc-600 border-t-transparent" />
-                        <div>Loading {selected.name}...</div>
-                      </div>
-                    </div>
-                  )}
-                  <iframe
-                    key={selected.id + (selectedSrc ?? selected.url ?? '')}
-                    title={selected.name}
-                    src={selectedSrc ?? selected.url}
-                    className="h-full w-full"
-                    allowFullScreen
-                    onLoad={() => setIframeLoading(false)}
-                  />
-                </>
-              ) : (
-                <div className="flex h-full w-full items-center justify-center text-sm text-zinc-400">
-                  {selected.name} is coming soon
+      <section className="flex flex-col gap-4 -mt-4">
+        <div className="flex items-center gap-3">
+          {/* Game tiles - slightly wider rectangles */}
+          {games.map((g) => (
+            <button
+              key={g.id}
+              type="button"
+              onClick={() => setSelectedId(g.id)}
+              style={tileBackgrounds[g.id]}
+              className={
+                'flex h-16 w-28 shrink-0 flex-col items-center justify-center rounded-xl border text-xs transition ' +
+                (selectedId === g.id
+                  ? 'border-brand ring-2 ring-brand/50 text-brand'
+                  : g.id === 'lo-siento'
+                    ? 'border-zinc-800 text-amber-600 hover:border-zinc-700'
+                    : 'border-zinc-800 text-zinc-300 hover:border-zinc-700')
+              }
+              aria-pressed={selectedId === g.id}
+            >
+              {g.logo ? (
+                <img src={g.logo} alt={g.name} className="h-8 w-8 rounded-sm object-cover" />
+              ) : g.emoji ? (
+                <div className="text-2xl" aria-hidden>
+                  {g.emoji}
                 </div>
-              )}
-            </div>
+              ) : null}
+              <div className="mt-1 truncate px-2 text-xs font-medium drop-shadow-sm">{g.name}</div>
+            </button>
+          ))}
+
+          {/* Spacer to push logo tile to the right */}
+          <div className="flex-1" />
+
+          {/* Logo tile on the far right - shows Profile (uses favicon) */}
+          <button
+            type="button"
+            onClick={() => setSelectedId('profile')}
+            className={
+              'flex h-16 w-16 shrink-0 items-center justify-center rounded-xl border transition ' +
+              (isProfile
+                ? 'border-brand bg-brand/20 ring-2 ring-brand/50'
+                : 'border-zinc-800 bg-zinc-900/50 hover:border-zinc-700 hover:bg-zinc-900/80')
+            }
+            aria-pressed={isProfile}
+            aria-label="Profile"
+          >
+            <img src="/favicon.png" alt="Profile" className="h-12 w-12 rounded-sm object-contain" />
+          </button>
+        </div>
+
+        <div className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-2 shadow-lg">
+          <div className="relative h-[88vh] w-full overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950">
+            {isProfile ? (
+              <div className="h-full w-full overflow-y-auto p-6">
+                <ProfileContent />
+              </div>
+            ) : selected?.url ? (
+              <>
+                {iframeLoading && (
+                  <div className="absolute inset-0 z-10 flex items-center justify-center bg-zinc-950">
+                    <div className="flex flex-col items-center gap-2 text-sm text-zinc-300">
+                      <div className="h-6 w-6 animate-spin rounded-full border-2 border-zinc-600 border-t-transparent" />
+                      <div>Loading {selected.name}...</div>
+                    </div>
+                  </div>
+                )}
+                <iframe
+                  key={selected.id + (selectedSrc ?? selected.url ?? '')}
+                  title={selected.name}
+                  src={selectedSrc ?? selected.url}
+                  className="h-full w-full"
+                  allowFullScreen
+                  onLoad={() => setIframeLoading(false)}
+                />
+              </>
+            ) : selected ? (
+              <div className="flex h-full w-full items-center justify-center text-sm text-zinc-400">
+                {selected.name} is coming soon
+              </div>
+            ) : null}
           </div>
-        </section>
-      </div>
+        </div>
+      </section>
+    </div>
   );
 };

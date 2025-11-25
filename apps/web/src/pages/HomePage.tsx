@@ -7,7 +7,7 @@ import { env } from '@/utils/env';
 
 export const HomePage = () => {
   const navigate = useNavigate();
-  const { session, loading, error, loginWithCredential, signOut } = useAuthContext();
+  const { session, loading, error, loginWithCredential } = useAuthContext();
 
   useEffect(() => {
     if (session) {
@@ -15,119 +15,53 @@ export const HomePage = () => {
     }
   }, [session, navigate]);
 
-  const firstName = session?.user.name?.split(' ')[0] ?? 'Player';
-
+  // Only show Google sign-in before login
   return (
-    <div className="flex flex-col gap-12">
-        <section className="flex flex-col gap-6">
-          <div>
-            <h1 className="text-3xl font-semibold text-zinc-100">LukeLaRue Gaming Lobby</h1>
-            <p className="text-sm text-zinc-400">
-              Sign in with Google to save progress, chat with friends, and compete in upcoming games.
-            </p>
-          </div>
-          {!session ? (
-            <div className="max-w-md rounded-2xl border border-zinc-800 bg-zinc-900/60 p-6 shadow-lg">
-              <h2 className="text-xl font-semibold">Join the lobby</h2>
-              <p className="mt-2 text-sm text-zinc-400">
-                Use your Google account to access early features and get notified as new games launch.
-              </p>
-              <div className="mt-6 flex flex-col gap-3">
-                {env.authMock ? (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      void loginWithCredential('mock-credential');
-                    }}
-                    className="flex items-center justify-center rounded-md bg-brand px-4 py-2 text-sm font-semibold text-zinc-950 transition hover:bg-brand/90"
-                  >
-                    Sign in (mock)
-                  </button>
-                ) : env.googleLoginMock ? (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      void loginWithCredential(env.fakeGoogleCredential);
-                    }}
-                    className="flex items-center justify-center rounded-md bg-brand px-4 py-2 text-sm font-semibold text-zinc-950 transition hover:bg-brand/90"
-                  >
-                    Sign in (emulator)
-                  </button>
-                ) : (
-                  <GoogleLogin
-                    onSuccess={(response) => {
-                      if (!response.credential) {
-                        return;
-                      }
-                      void loginWithCredential(response.credential);
-                    }}
-                    onError={() => {
-                      // eslint-disable-next-line no-console
-                      console.error('Google Sign-In failed');
-                    }}
-                  />
-                )}
-                {loading ? <LoadingScreen message="Authenticating" className="h-24 rounded-xl" /> : null}
-                {!loading ? (
-                  <p className="text-xs text-zinc-500">
-                    Your Google profile will be stored securely in Firestore upon sign-in.
-                  </p>
-                ) : null}
-                {error ? <p className="text-sm text-rose-400">{error}</p> : null}
-              </div>
-            </div>
-          ) : (
-            <div className="flex gap-6">
-              <div className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-6 shadow-lg">
-                <h2 className="text-xl font-semibold">Welcome back, {firstName}</h2>
-                <p className="mt-2 text-sm text-zinc-400">
-                  Your profile is synced. Chat, multiplayer lobbies, and game stats will appear here soon.
-                </p>
-                <div className="mt-6 flex flex-wrap items-center gap-4">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      void signOut();
-                    }}
-                    className="rounded-full bg-zinc-800 px-4 py-2 text-sm font-medium text-zinc-200 transition hover:bg-zinc-700"
-                  >
-                    Sign out
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      navigate('/lobby');
-                    }}
-                    className="rounded-full border border-brand px-4 py-2 text-sm font-medium text-brand transition hover:bg-brand hover:text-zinc-950"
-                  >
-                    Enter lobby
-                  </button>
-                  <div className="text-xs text-zinc-500">
-                    Signed in as
-                    <div className="font-medium text-zinc-300">{session.user.email}</div>
-                  </div>
-                </div>
-              </div>
-              <div className="flex flex-1 flex-col gap-4 rounded-2xl border border-dashed border-zinc-800 bg-zinc-900/30 p-6">
-                <h3 className="text-lg font-medium text-zinc-200">Upcoming features</h3>
-                <ul className="flex flex-col gap-2 text-sm text-zinc-400">
-                  <li className="flex items-center gap-2">
-                    <span className="h-2 w-2 rounded-full bg-brand" aria-hidden />
-                    Multiplayer chat rooms powered by WebSockets.
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="h-2 w-2 rounded-full bg-brand" aria-hidden />
-                    Game launcher with Minesweeper, ¡Lo Siento!, and Larve's Block Party.
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="h-2 w-2 rounded-full bg-brand" aria-hidden />
-                    AI-powered coaching to help you improve your strategy.
-                  </li>
-                </ul>
-              </div>
-            </div>
-          )}
-        </section>
+    <div className="flex min-h-screen items-center justify-center bg-zinc-950">
+      <div className="flex flex-col items-center gap-4">
+        {/* Logo above sign in button */}
+        <img
+          src="/favicon.png"
+          alt="Logo"
+          className="h-24 w-24"
+        />
+        {env.authMock ? (
+          <button
+            type="button"
+            onClick={() => {
+              void loginWithCredential('mock-credential');
+            }}
+            className="flex items-center justify-center rounded-md bg-brand px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand/90"
+          >
+            Sign in (mock)
+          </button>
+        ) : env.googleLoginMock ? (
+          <button
+            type="button"
+            onClick={() => {
+              void loginWithCredential(env.fakeGoogleCredential);
+            }}
+            className="flex items-center justify-center rounded-md bg-brand px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand/90"
+          >
+            Sign in (emulator)
+          </button>
+        ) : (
+          <GoogleLogin
+            onSuccess={(response) => {
+              if (!response.credential) {
+                return;
+              }
+              void loginWithCredential(response.credential);
+            }}
+            onError={() => {
+              // eslint-disable-next-line no-console
+              console.error('Google Sign-In failed');
+            }}
+          />
+        )}
+        {loading ? <LoadingScreen message="Authenticating" className="h-24 rounded-xl" /> : null}
+        {error ? <p className="text-sm text-rose-400">{error}</p> : null}
       </div>
+    </div>
   );
 };
