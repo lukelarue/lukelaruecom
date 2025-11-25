@@ -40,8 +40,10 @@ const RealGoogleLoginButton = ({ onLogin }: { onLogin: (credential: string) => v
         // eslint-disable-next-line no-console
         console.error('Google Sign-In failed');
       }}
+      type="standard"
       shape="pill"
-      theme="filled_blue"
+      theme="outline"
+      text="signin_with"
     />
   );
 };

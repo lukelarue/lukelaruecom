@@ -54,7 +54,10 @@ export const ChatSidebar = () => {
     const el = messagesContainerRef.current;
     if (el) {
       // Jump to bottom instantly without visible scrolling
-      el.scrollTop = el.scrollHeight;
+      // Use requestAnimationFrame to ensure DOM has fully updated
+      requestAnimationFrame(() => {
+        el.scrollTop = el.scrollHeight;
+      });
     }
   }, [activeChannelId, messages.length]);
 
