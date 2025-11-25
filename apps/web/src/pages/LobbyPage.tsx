@@ -121,7 +121,7 @@ export const LobbyPage = () => {
           {/* Spacer to push logo tile to the right */}
           <div className="flex-1" />
 
-          {/* Logo tile on the far right - shows Profile (uses favicon) */}
+          {/* Logo tile on the far right - shows Profile */}
           <button
             type="button"
             onClick={() => setSelectedId('profile')}
@@ -137,7 +137,7 @@ export const LobbyPage = () => {
             aria-pressed={isProfile}
             aria-label="Profile"
           >
-            <img src="/favicon.png" alt="Profile" className="h-12 w-12 rounded-sm object-contain" />
+            <img src="/logo.png" alt="Profile" className="h-12 w-12 rounded-sm object-contain" />
           </button>
         </div>
 

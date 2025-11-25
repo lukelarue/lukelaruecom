@@ -76,7 +76,7 @@ export const HomePage = () => {
       <div className="flex flex-col items-center gap-4">
         {/* Logo above sign in button */}
         <img
-          src="/favicon.png"
+          src="/logo.png"
           alt="Logo"
           className="h-24 w-24"
         />
