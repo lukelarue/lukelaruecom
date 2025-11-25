@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useGoogleLogin } from '@react-oauth/google';
+import { GoogleLogin } from '@react-oauth/google';
 import { useNavigate } from 'react-router-dom';
 import { LoadingScreen } from '@/components/LoadingScreen';
 import { useAuthContext } from '@/hooks/useAuthContext';
@@ -27,36 +27,22 @@ const GoogleLogo = () => (
   </svg>
 );
 
-// Separate component for real Google login (requires GoogleOAuthProvider)
+// Separate component for real Google login using ID token flow
 const RealGoogleLoginButton = ({ onLogin }: { onLogin: (credential: string) => void }) => {
-  const googleLogin = useGoogleLogin({
-    onSuccess: async (tokenResponse) => {
-      try {
-        const res = await fetch(
-          `https://www.googleapis.com/oauth2/v3/userinfo?access_token=${tokenResponse.access_token}`
-        );
-        const userInfo = await res.json();
-        onLogin(JSON.stringify(userInfo));
-      } catch (err) {
-        // eslint-disable-next-line no-console
-        console.error('Failed to get user info:', err);
-      }
-    },
-    onError: () => {
-      // eslint-disable-next-line no-console
-      console.error('Google Sign-In failed');
-    },
-  });
-
   return (
-    <button
-      type="button"
-      onClick={() => googleLogin()}
-      className="flex items-center justify-center gap-3 rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-zinc-800 transition hover:bg-zinc-100"
-    >
-      <GoogleLogo />
-      Sign in with Google
-    </button>
+    <GoogleLogin
+      onSuccess={(credentialResponse) => {
+        if (credentialResponse.credential) {
+          onLogin(credentialResponse.credential);
+        }
+      }}
+      onError={() => {
+        // eslint-disable-next-line no-console
+        console.error('Google Sign-In failed');
+      }}
+      shape="pill"
+      theme="filled_blue"
+    />
   );
 };
 
