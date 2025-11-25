@@ -91,14 +91,19 @@ export const LobbyPage = () => {
               key={g.id}
               type="button"
               onClick={() => setSelectedId(g.id)}
-              style={tileBackgrounds[g.id]}
+              style={{
+                ...tileBackgrounds[g.id],
+                boxShadow: selectedId === g.id ? '0 0 35px 8px rgba(103, 28, 28, 0.8)' : undefined,
+              }}
               className={
-                'flex h-16 w-28 shrink-0 flex-col items-center justify-center rounded-xl border text-xs transition ' +
-                (selectedId === g.id
-                  ? 'border-brand ring-2 ring-brand/50 text-brand'
-                  : g.id === 'lo-siento'
-                    ? 'border-zinc-800 text-amber-600 hover:border-zinc-700'
-                    : 'border-zinc-800 text-zinc-300 hover:border-zinc-700')
+                'flex h-16 w-28 shrink-0 flex-col items-center justify-center rounded-xl border text-xs transition-all duration-200 ' +
+                (g.id === 'lo-siento'
+                  ? selectedId === g.id
+                    ? 'border-zinc-950 text-amber-600 font-bold'
+                    : 'border-zinc-950 text-amber-600 hover:border-zinc-800'
+                  : selectedId === g.id
+                    ? 'border-zinc-950 text-zinc-300 font-bold'
+                    : 'border-zinc-950 text-zinc-300 hover:border-zinc-800')
               }
               aria-pressed={selectedId === g.id}
             >
@@ -120,11 +125,14 @@ export const LobbyPage = () => {
           <button
             type="button"
             onClick={() => setSelectedId('profile')}
+            style={{
+              boxShadow: isProfile ? '0 0 35px 8px rgba(103, 28, 28, 0.8)' : undefined,
+            }}
             className={
-              'flex h-16 w-16 shrink-0 items-center justify-center rounded-xl border transition ' +
+              'flex h-16 w-16 shrink-0 items-center justify-center rounded-xl border transition-all duration-200 ' +
               (isProfile
-                ? 'border-brand bg-brand/20 ring-2 ring-brand/50'
-                : 'border-zinc-800 bg-zinc-900/50 hover:border-zinc-700 hover:bg-zinc-900/80')
+                ? 'border-zinc-950 bg-zinc-900/50'
+                : 'border-zinc-950 bg-zinc-900/50 hover:border-zinc-800 hover:bg-zinc-900/80')
             }
             aria-pressed={isProfile}
             aria-label="Profile"
