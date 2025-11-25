@@ -32,8 +32,7 @@ describe('offline integration (frontend)', () => {
 
     renderWithRouter(<App />);
 
-    expect(await screen.findByText(/LukeLaRue Gaming Lobby/i)).toBeInTheDocument();
-
+    // Login page now shows only logo and sign-in button (no lobby title)
     const [googleButton] = await screen.findAllByRole('button', { name: /sign in/i });
     await act(async () => {
       googleButton.click();
