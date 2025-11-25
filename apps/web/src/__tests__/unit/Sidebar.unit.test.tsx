@@ -28,19 +28,17 @@ const renderSidebar = (authContext: AuthContextValue, options?: Parameters<typeo
 };
 
 describe('Sidebar', () => {
-  it('shows guest navigation when no session is present', () => {
+  it('shows guest state when no session is present', () => {
     const context = createAuthContext();
 
     renderSidebar(context);
 
-    expect(screen.getByText('Home')).toBeInTheDocument();
-    const lobbyLabel = screen.getByText('Lobby');
-    expect(lobbyLabel.tagName).toBe('SPAN');
-    expect(screen.queryByRole('link', { name: 'Lobby' })).toBeNull();
+    expect(screen.getByText('Guest')).toBeInTheDocument();
+    expect(screen.getByText('Not signed in')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /sign out/i })).not.toBeInTheDocument();
   });
 
-  it('enables navigation and sign-out for an authenticated user', async () => {
+  it('shows user info and sign-out for an authenticated user', async () => {
     const signOut = vi.fn().mockResolvedValue(undefined);
     const context = createAuthContext({
       session: {
@@ -59,8 +57,8 @@ describe('Sidebar', () => {
       initialEntries: ['/lobby'],
     });
 
-    const lobbyLink = screen.getByRole('link', { name: 'Lobby' });
-    expect(lobbyLink).toHaveAttribute('href', '/lobby');
+    expect(screen.getByText('Mocky')).toBeInTheDocument();
+    expect(screen.getByText('mock@example.com')).toBeInTheDocument();
 
     const signOutButton = screen.getByRole('button', { name: /sign out/i });
     expect(signOutButton).toBeEnabled();
@@ -84,7 +82,8 @@ describe('Sidebar', () => {
 
     renderSidebar(context);
 
-    const signOutButton = screen.getByRole('button', { name: /signing out/i });
+    // When loading, button shows "…" and is disabled
+    const signOutButton = screen.getByRole('button', { name: '…' });
     expect(signOutButton).toBeDisabled();
   });
 });
