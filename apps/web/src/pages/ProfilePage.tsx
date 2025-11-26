@@ -207,17 +207,17 @@ export const ProfileContent = () => {
     return () => { cancelled = true; };
   }, [section, leaderboardGame]);
 
-  if (!session) return null;
-
-  const firstInitial = session.user.name?.[0]?.toUpperCase() ?? session.user.email[0]?.toUpperCase() ?? '?';
-
-  // Sort byOption by played descending
+  // Sort byOption by played descending (must be before early return)
   const sortedByOption = useMemo(() => {
     if (!stats?.byOption) return [];
     return [...stats.byOption].sort((a, b) => b.played - a.played);
   }, [stats?.byOption]);
 
   const visibleConfigs = 7;
+
+  if (!session) return null;
+
+  const firstInitial = session.user.name?.[0]?.toUpperCase() ?? session.user.email[0]?.toUpperCase() ?? '?';
 
   return (
     <div className="mx-auto flex max-w-4xl flex-col gap-6">
