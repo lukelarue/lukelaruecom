@@ -77,12 +77,17 @@ export const ChatSidebar = () => {
     const channelChanged = prevChannelIdRef.current !== activeChannelId;
     const messagesAdded = messages.length > prevMessagesLengthRef.current;
 
+    // Check if at bottom right now (more reliable than relying solely on scroll events)
+    const threshold = 50;
+    const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+    const currentlyAtBottom = distanceFromBottom <= threshold;
+
     // Update refs for next comparison
     prevChannelIdRef.current = activeChannelId;
     prevMessagesLengthRef.current = messages.length;
 
     // Always scroll to bottom on channel change, or if user was already at bottom when new messages arrive
-    if (channelChanged || (messagesAdded && isAtBottomRef.current)) {
+    if (channelChanged || (messagesAdded && (isAtBottomRef.current || currentlyAtBottom))) {
       // Use double requestAnimationFrame to ensure DOM has fully updated
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
