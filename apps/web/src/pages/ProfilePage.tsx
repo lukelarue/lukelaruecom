@@ -75,7 +75,6 @@ type LoSientoStats = {
 type LoSientoLeaderboardEntry = {
   rank: number;
   user_id: string;
-  display_name: string | null;
   wins: number;
   losses: number;
   played: number;
@@ -625,7 +624,7 @@ export const ProfileContent = () => {
                             <td className={`py-2 px-2 truncate max-w-[150px] ${
                               entry.user_id === userKey ? 'text-emerald-300' : 'text-zinc-300'
                             }`}>
-                              {entry.display_name || entry.user_id.split('@')[0]}
+                              {entry.user_id.includes('@') ? entry.user_id.split('@')[0] : entry.user_id}
                             </td>
                             <td className="py-2 px-2 text-right text-emerald-400">{entry.wins}</td>
                             <td className="py-2 px-2 text-right text-zinc-400">{(entry.winPct * 100).toFixed(0)}%</td>
