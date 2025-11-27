@@ -49,14 +49,47 @@ export const ChatSidebar = () => {
   const messagesContainerRef = useRef<HTMLDivElement | null>(null);
   const formRef = useRef<HTMLFormElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const isAtBottomRef = useRef(true);
+  const prevMessagesLengthRef = useRef(0);
+  const prevChannelIdRef = useRef<string | null>(null);
 
+  // Track if user is at the bottom of the scroll container
+  useEffect(() => {
+    const el = messagesContainerRef.current;
+    if (!el) return;
+
+    const handleScroll = () => {
+      // Consider "at bottom" if within 50px of the bottom
+      const threshold = 50;
+      const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+      isAtBottomRef.current = distanceFromBottom <= threshold;
+    };
+
+    el.addEventListener('scroll', handleScroll);
+    return () => el.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Scroll to bottom on channel change or when new messages arrive (if user is at bottom)
   useLayoutEffect(() => {
     const el = messagesContainerRef.current;
-    if (el) {
-      // Jump to bottom instantly without visible scrolling
-      // Use requestAnimationFrame to ensure DOM has fully updated
+    if (!el) return;
+
+    const channelChanged = prevChannelIdRef.current !== activeChannelId;
+    const messagesAdded = messages.length > prevMessagesLengthRef.current;
+
+    // Update refs for next comparison
+    prevChannelIdRef.current = activeChannelId;
+    prevMessagesLengthRef.current = messages.length;
+
+    // Always scroll to bottom on channel change, or if user was already at bottom when new messages arrive
+    if (channelChanged || (messagesAdded && isAtBottomRef.current)) {
+      // Use double requestAnimationFrame to ensure DOM has fully updated
       requestAnimationFrame(() => {
-        el.scrollTop = el.scrollHeight;
+        requestAnimationFrame(() => {
+          el.scrollTop = el.scrollHeight;
+          // Reset to at bottom after forced scroll
+          isAtBottomRef.current = true;
+        });
       });
     }
   }, [activeChannelId, messages.length]);
