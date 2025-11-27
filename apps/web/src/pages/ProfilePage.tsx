@@ -61,6 +61,32 @@ type WinStatsData = {
   entries: WinStatsEntry[];
 };
 
+// Lo Siento types
+type LoSientoStats = {
+  totals: {
+    played: number;
+    wins: number;
+    losses: number;
+    winPct: number;
+    bestTurns: number | null;
+  };
+};
+
+type LoSientoLeaderboardEntry = {
+  rank: number;
+  user_id: string;
+  display_name: string | null;
+  wins: number;
+  losses: number;
+  played: number;
+  winPct: number;
+  bestTurns: number | null;
+};
+
+type LoSientoLeaderboardData = {
+  entries: LoSientoLeaderboardEntry[];
+};
+
 const TRACKED_MODES = [
   { key: 'beginner', name: 'Beginner', width: 8, height: 8, mines: 10 },
   { key: 'intermediate', name: 'Intermediate', width: 16, height: 16, mines: 40 },
@@ -135,6 +161,13 @@ export const ProfileContent = () => {
   const [winStats, setWinStats] = useState<Record<string, WinStatsData>>({});
   const [leaderboardsLoading, setLeaderboardsLoading] = useState(false);
   const [leaderboardTab, setLeaderboardTab] = useState<LeaderboardTab>('wins');
+  
+  // Lo Siento state
+  const [loSientoStats, setLoSientoStats] = useState<LoSientoStats | null>(null);
+  const [loSientoStatsLoading, setLoSientoStatsLoading] = useState(false);
+  const [loSientoStatsError, setLoSientoStatsError] = useState<string | null>(null);
+  const [loSientoLeaderboard, setLoSientoLeaderboard] = useState<LoSientoLeaderboardData | null>(null);
+  const [loSientoLeaderboardLoading, setLoSientoLeaderboardLoading] = useState(false);
 
   const userKey = useMemo(() => {
     if (!session) return null;
@@ -171,7 +204,37 @@ export const ProfileContent = () => {
     return () => { cancelled = true; };
   }, [session, userKey]);
 
-  // Fetch leaderboards and win stats when leaderboards section is active
+  // Fetch Lo Siento stats
+  useEffect(() => {
+    if (!session || !userKey) return;
+    if (!env.losientoUrl) {
+      setLoSientoStatsError('Lo Siento is not configured.');
+      return;
+    }
+    let cancelled = false;
+    const fetchStats = async () => {
+      setLoSientoStatsLoading(true);
+      setLoSientoStatsError(null);
+      try {
+        const base = env.losientoUrl.replace(/\/$/, '');
+        const res = await fetch(`${base}/api/losiento/stats`, {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json', 'X-User-Id': userKey },
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = (await res.json()) as LoSientoStats;
+        if (!cancelled) setLoSientoStats(data);
+      } catch {
+        if (!cancelled) setLoSientoStatsError('Unable to load Lo Siento stats.');
+      } finally {
+        if (!cancelled) setLoSientoStatsLoading(false);
+      }
+    };
+    fetchStats();
+    return () => { cancelled = true; };
+  }, [session, userKey]);
+
+  // Fetch minesweeper leaderboards
   useEffect(() => {
     if (section !== 'leaderboards' || leaderboardGame !== 'minesweeper') return;
     if (!env.minesweeperUrl) return;
@@ -204,6 +267,30 @@ export const ProfileContent = () => {
       }
     };
     fetchLeaderboards();
+    return () => { cancelled = true; };
+  }, [section, leaderboardGame]);
+
+  // Fetch Lo Siento leaderboard
+  useEffect(() => {
+    if (section !== 'leaderboards' || leaderboardGame !== 'losiento') return;
+    if (!env.losientoUrl) return;
+    let cancelled = false;
+    const fetchLeaderboard = async () => {
+      setLoSientoLeaderboardLoading(true);
+      try {
+        const base = env.losientoUrl.replace(/\/$/, '');
+        const res = await fetch(`${base}/api/losiento/leaderboard?limit=10`);
+        if (res.ok) {
+          const data = (await res.json()) as LoSientoLeaderboardData;
+          if (!cancelled) setLoSientoLeaderboard(data);
+        }
+      } catch {
+        // Skip failed fetch
+      } finally {
+        if (!cancelled) setLoSientoLeaderboardLoading(false);
+      }
+    };
+    fetchLeaderboard();
     return () => { cancelled = true; };
   }, [section, leaderboardGame]);
 
@@ -353,8 +440,44 @@ export const ProfileContent = () => {
               )}
             </div>
           ) : (
-            <div className="py-8 text-center text-sm text-zinc-500">
-              ¡Lo Siento! stats coming soon
+            <div className="flex flex-col gap-3">
+              {!env.losientoUrl ? (
+                <p className="text-sm text-zinc-400">Lo Siento is not configured.</p>
+              ) : loSientoStatsLoading ? (
+                <p className="text-sm text-zinc-400">Loading stats...</p>
+              ) : loSientoStatsError ? (
+                <p className="text-sm text-red-400">{loSientoStatsError}</p>
+              ) : !loSientoStats ? (
+                <p className="text-sm text-zinc-400">No stats available yet. Play a game to get started.</p>
+              ) : (
+                <>
+                  {/* Totals */}
+                  <div className="flex flex-wrap gap-4 text-sm">
+                    <div className="rounded-lg bg-zinc-800/50 px-3 py-2">
+                      <span className="text-zinc-400">Games Played: </span>
+                      <span className="font-medium text-zinc-100">{loSientoStats.totals.played}</span>
+                    </div>
+                    <div className="rounded-lg bg-zinc-800/50 px-3 py-2">
+                      <span className="text-zinc-400">Wins: </span>
+                      <span className="font-medium text-emerald-400">{loSientoStats.totals.wins}</span>
+                    </div>
+                    <div className="rounded-lg bg-zinc-800/50 px-3 py-2">
+                      <span className="text-zinc-400">Losses: </span>
+                      <span className="font-medium text-rose-400">{loSientoStats.totals.losses}</span>
+                    </div>
+                    <div className="rounded-lg bg-zinc-800/50 px-3 py-2">
+                      <span className="text-zinc-400">Win Rate: </span>
+                      <span className="font-medium text-zinc-100">{(loSientoStats.totals.winPct * 100).toFixed(1)}%</span>
+                    </div>
+                    {loSientoStats.totals.bestTurns != null && (
+                      <div className="rounded-lg bg-zinc-800/50 px-3 py-2">
+                        <span className="text-zinc-400">Best Win: </span>
+                        <span className="font-medium text-sky-400">{loSientoStats.totals.bestTurns} turns</span>
+                      </div>
+                    )}
+                  </div>
+                </>
+              )}
             </div>
           )}
         </section>
@@ -469,8 +592,53 @@ export const ProfileContent = () => {
               )}
             </div>
           ) : (
-            <div className="py-8 text-center text-sm text-zinc-500">
-              ¡Lo Siento! leaderboards coming soon
+            <div className="flex flex-col gap-4">
+              {!env.losientoUrl ? (
+                <p className="text-sm text-zinc-400">Lo Siento is not configured.</p>
+              ) : loSientoLeaderboardLoading ? (
+                <p className="text-sm text-zinc-400">Loading leaderboards...</p>
+              ) : !loSientoLeaderboard || loSientoLeaderboard.entries.length === 0 ? (
+                <p className="text-sm text-zinc-400">No entries yet. Complete a game to appear on the leaderboard.</p>
+              ) : (
+                <div className="rounded-xl border border-zinc-800 bg-zinc-900/40 p-4">
+                  <h4 className="mb-3 text-sm font-semibold text-zinc-200">Top Players</h4>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-xs">
+                      <thead>
+                        <tr className="text-zinc-500 border-b border-zinc-800">
+                          <th className="text-left py-2 px-2">#</th>
+                          <th className="text-left py-2 px-2">Player</th>
+                          <th className="text-right py-2 px-2">Wins</th>
+                          <th className="text-right py-2 px-2">W%</th>
+                          <th className="text-right py-2 px-2">Best</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {loSientoLeaderboard.entries.map((entry) => (
+                          <tr
+                            key={entry.user_id}
+                            className={`border-b border-zinc-800/50 ${
+                              entry.user_id === userKey ? 'bg-emerald-900/20' : ''
+                            }`}
+                          >
+                            <td className="py-2 px-2 text-zinc-500">#{entry.rank}</td>
+                            <td className={`py-2 px-2 truncate max-w-[150px] ${
+                              entry.user_id === userKey ? 'text-emerald-300' : 'text-zinc-300'
+                            }`}>
+                              {entry.display_name || entry.user_id.split('@')[0]}
+                            </td>
+                            <td className="py-2 px-2 text-right text-emerald-400">{entry.wins}</td>
+                            <td className="py-2 px-2 text-right text-zinc-400">{(entry.winPct * 100).toFixed(0)}%</td>
+                            <td className="py-2 px-2 text-right text-sky-400">
+                              {entry.bestTurns != null ? `${entry.bestTurns}t` : '-'}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </section>
