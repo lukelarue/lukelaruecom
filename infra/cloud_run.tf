@@ -16,7 +16,7 @@ resource "google_cloud_run_service" "frontend" {
 
   metadata {
     annotations = {
-      "run.googleapis.com/ingress" = "internal-and-cloud-load-balancing"
+      "run.googleapis.com/ingress" = "all"
     }
   }
 
@@ -259,4 +259,46 @@ resource "google_cloud_run_service_iam_member" "chat_api_public" {
   location = google_cloud_run_service.chat_api.location
   role     = "roles/run.invoker"
   member   = "allUsers"
+}
+
+# Domain mappings for frontend (replaces load balancer)
+resource "google_cloud_run_domain_mapping" "frontend" {
+  for_each = toset(var.frontend_domains)
+
+  name     = each.value
+  location = var.cloud_run_location
+
+  metadata {
+    namespace = var.project_id
+  }
+
+  spec {
+    route_name = google_cloud_run_service.frontend.name
+  }
+
+  depends_on = [google_cloud_run_service.frontend]
+}
+
+# Outputs for API URLs (needed for frontend build)
+output "login_api_url" {
+  description = "Cloud Run URL for the login API"
+  value       = google_cloud_run_service.login_api.status[0].url
+}
+
+output "chat_api_url" {
+  description = "Cloud Run URL for the chat API"
+  value       = google_cloud_run_service.chat_api.status[0].url
+}
+
+output "frontend_url" {
+  description = "Cloud Run URL for the frontend"
+  value       = google_cloud_run_service.frontend.status[0].url
+}
+
+output "frontend_domain_mapping_records" {
+  description = "DNS records to configure in Cloudflare for each domain"
+  value = {
+    for domain, mapping in google_cloud_run_domain_mapping.frontend :
+    domain => mapping.status[0].resource_records
+  }
 }

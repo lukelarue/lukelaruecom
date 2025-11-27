@@ -51,6 +51,8 @@ jobs:
               VITE_GOOGLE_CLIENT_ID=${{ vars.VITE_GOOGLE_CLIENT_ID }}
               VITE_MINESWEEPER_URL=${{ vars.VITE_MINESWEEPER_URL }}
               VITE_LOSIENTO_URL=${{ vars.VITE_LOSIENTO_URL }}
+              VITE_LOGIN_API_BASE_URL=${{ vars.VITE_LOGIN_API_BASE_URL }}
+              VITE_CHAT_API_BASE_URL=${{ vars.VITE_CHAT_API_BASE_URL }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -71,11 +73,15 @@ jobs:
           VITE_GOOGLE_CLIENT_ID: ${{ vars.VITE_GOOGLE_CLIENT_ID }}
           VITE_MINESWEEPER_URL: ${{ vars.VITE_MINESWEEPER_URL }}
           VITE_LOSIENTO_URL: ${{ vars.VITE_LOSIENTO_URL }}
+          VITE_LOGIN_API_BASE_URL: ${{ vars.VITE_LOGIN_API_BASE_URL }}
+          VITE_CHAT_API_BASE_URL: ${{ vars.VITE_CHAT_API_BASE_URL }}
         run: |
           check_var() { name="$1"; val="$2"; trim="$(printf '%s' "$val" | tr -d '[:space:]')"; if [ -z "$trim" ]; then echo "Missing required repository variable: $name" >&2; exit 1; fi; }
           check_var VITE_GOOGLE_CLIENT_ID "$VITE_GOOGLE_CLIENT_ID"
           check_var VITE_MINESWEEPER_URL "$VITE_MINESWEEPER_URL"
           check_var VITE_LOSIENTO_URL "$VITE_LOSIENTO_URL"
+          check_var VITE_LOGIN_API_BASE_URL "$VITE_LOGIN_API_BASE_URL"
+          check_var VITE_CHAT_API_BASE_URL "$VITE_CHAT_API_BASE_URL"
 
       - id: auth
         name: Authenticate to Google Cloud

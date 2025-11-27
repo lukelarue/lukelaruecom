@@ -62,34 +62,33 @@ terraform plan -detailed-exitcode -no-color   # optional drift detection
 > Ensure you are authenticated to Google Cloud (`gcloud auth application-default login` or Workload Identity Federation) so `terraform plan` can access remote state and project resources.
 
 ## Architecture Overview
-- **Frontend** Static assets from the Vite build are uploaded to a Cloud Storage bucket and served via Cloud CDN behind a HTTPS load balancer. Cloudflare proxies the public domain and routes traffic to the Google endpoint.
-- **Login API** (`services/login-api`) runs on Cloud Run, handles Google sign-in, session cookies, and persists user profiles to Firestore.
-- **Chat API** (`services/chat-api`) runs on Cloud Run, performs channel/message operations backed by Firestore.
+- **Frontend** Runs on Cloud Run with domain mapping for `lukelarue.com`. Cloudflare proxies the public domain.
+- **Login API** (`services/login-api`) runs on Cloud Run, handles Google sign-in, session cookies, and persists user profiles to Firestore. Accessed directly via Cloud Run URL.
+- **Chat API** (`services/chat-api`) runs on Cloud Run, performs channel/message operations backed by Firestore. Accessed directly via Cloud Run URL.
 - **Firestore** Native-mode database shared by both APIs for auth profiles and chat data. Provisioned via Terraform (`firestore.tf`) after enabling the Firestore API, with destroy protection enabled for safety.
 - **Secret Manager** Stores sensitive configuration (session JWT secret, OAuth client ID, etc.) injected into Cloud Run revisions.
 - **Artifact Registry & CI/CD** Host Docker images built from the repository; GitHub Actions (with Workload Identity) or Cloud Build deploy updated revisions.
-- **Cloudflare DNS** Remains authoritative for `lukelarue.com`, with records pointing to the Google HTTPS load balancer and Cloud Run custom domains.
+- **Cloudflare DNS** Remains authoritative for `lukelarue.com`, with CNAME records pointing to Cloud Run domain mappings.
 
 ```mermaid
 flowchart LR
-  subgraph Cloudflare CDN
+  subgraph Cloudflare
     CF[Cloudflare DNS/Proxy]
   end
   subgraph Google Cloud
-    CDN[HTTPS Load Balancer + Cloud CDN]
-    Bucket[Cloud Storage Bucket]
     subgraph Cloud Run
+      Frontend[Frontend]
       LoginAPI[Login API]
       ChatAPI[Chat API]
     end
     Firestore[(Firestore)]
     Secrets[Secret Manager]
   end
-  FrontendUser[Browser]
+  Browser[Browser]
 
-  FrontendUser --> CF --> CDN --> Bucket
-  FrontendUser --> CF --> LoginAPI
-  FrontendUser --> CF --> ChatAPI
+  Browser --> CF --> Frontend
+  Frontend -.-> LoginAPI
+  Frontend -.-> ChatAPI
   LoginAPI --> Firestore
   ChatAPI --> Firestore
   LoginAPI --> Secrets
@@ -97,14 +96,39 @@ flowchart LR
 ```
 
 ## Service Interactions
-- **Frontend ↔ Login API** `apps/web` uses `VITE_LOGIN_API_BASE_URL` to exchange Google credentials for session cookies via `POST /auth/google` and read sessions via `GET /auth/session`.
-- **Frontend ↔ Chat API** `apps/web` calls chat endpoints with `x-user-id` headers sourced from the authenticated session and reads/writes messages.
+- **Frontend ↔ Login API** `apps/web` uses `VITE_LOGIN_API_BASE_URL` (set to the Cloud Run URL) to exchange Google credentials for session cookies via `POST /auth/google` and read sessions via `GET /auth/session`.
+- **Frontend ↔ Chat API** `apps/web` calls chat endpoints with `x-user-id` headers sourced from the authenticated session and reads/writes messages via `VITE_CHAT_API_BASE_URL`.
 - **APIs ↔ Firestore** Login API persists user profiles; Chat API stores channels and messages. Emulator flags are disabled in production via Terraform-managed environment variables.
-- **CI/CD** Builds Docker images from `services/login-api` and `services/chat-api` using the repository Dockerfiles, pushes to Artifact Registry, and triggers `gcloud run deploy`. Frontend deploy stage uploads `apps/web/dist` to the storage bucket and invalidates Cloud CDN caches. Terraform automation in GitHub Actions authenticates via workload identity federation (no JSON keys) to run format, lint, validate, and plan checks.
+- **CI/CD** Builds Docker images from `services/login-api`, `services/chat-api`, and `apps/web` using their Dockerfiles, pushes to Artifact Registry, and triggers `gcloud run deploy`. Frontend build receives API URLs via build args. Terraform automation in GitHub Actions authenticates via workload identity federation (no JSON keys) to run format, lint, validate, and plan checks.
 
 ## Terraform Layout
 - **`backend.tf`** Configures remote state (GCS bucket + prefix) and providers.
 - **`firestore.tf`** Enables required services and provisions the default Firestore database with destroy protection.
-- **`main.tf` / modules** Define Cloud Run services, Artifact Registry, Cloud CDN load balancer, service accounts, secrets, and DNS records.
+- **`cloud_run.tf`** Define Cloud Run services, domain mappings, and outputs for API URLs.
 - **`artifact_registry.tf`** Creates Artifact Registry Docker repositories for the Login and Chat API images.
-- **`variables.tf` / `outputs.tf`** Capture customizable project IDs, regions, bucket names, and important endpoints.
+- **`variables.tf`** Capture customizable project IDs, regions, and domain names.
+
+## Required GitHub Repository Variables
+
+After running `terraform apply`, set these variables in GitHub repository settings:
+
+| Variable | Description | Example |
+|----------|-------------|----------|
+| `VITE_LOGIN_API_BASE_URL` | Login API Cloud Run URL | `https://login-api-xxx-uc.a.run.app` |
+| `VITE_CHAT_API_BASE_URL` | Chat API Cloud Run URL | `https://chat-api-xxx-uc.a.run.app` |
+
+Get the URLs from Terraform output:
+```bash
+terraform output login_api_url
+terraform output chat_api_url
+```
+
+## DNS Configuration (Cloudflare)
+
+After `terraform apply`, configure Cloudflare DNS with the domain mapping records:
+
+```bash
+terraform output frontend_domain_mapping_records
+```
+
+Typically, you'll add CNAME records pointing to `ghs.googlehosted.com` for each domain.
