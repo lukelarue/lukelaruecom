@@ -4,6 +4,18 @@ variable "project_id" {
   default     = "parabolic-env-456611-q9"
 }
 
+variable "billing_account_id" {
+  description = "GCP Billing Account ID for budget alerts (format: XXXXXX-XXXXXX-XXXXXX)"
+  type        = string
+  default     = "014813-FBB180-B9C419"
+}
+
+variable "budget_alert_email" {
+  description = "Email address to receive budget alerts"
+  type        = string
+  default     = "larvelarue@gmail.com"
+}
+
 variable "github_repository" {
   description = "GitHub repository in the format owner/repo used for workload identity federation"
   type        = string
