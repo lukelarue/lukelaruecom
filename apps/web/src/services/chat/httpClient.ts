@@ -211,13 +211,8 @@ export const createHttpChatClient = ({
         };
       };
 
-      // Start both SSE and polling; polling acts as a safety net
-      const sseCleanup = startSSE();
-      const pollCleanup = startPolling();
-      cleanup = () => {
-        if (sseCleanup) sseCleanup();
-        if (pollCleanup) pollCleanup();
-      };
+      // Start with SSE; only fall back to polling if SSE fails
+      cleanup = startSSE();
       return () => {
         if (cleanup) cleanup();
       };
