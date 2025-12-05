@@ -27,7 +27,7 @@ export const LobbyPage = () => {
       },
       {
         id: 'larves-block-party',
-        name: "Larve's Block Party",
+        name: "Larve's Block Party (Beta)",
         url: env.larvesBlockPartyUrl,
         emoji: '' as const,
         logo: undefined as string | undefined,
@@ -50,7 +50,7 @@ export const LobbyPage = () => {
 
   const selectedSrc = useMemo(() => {
     if (!selected?.url) return undefined;
-    if ((selected.id === 'minesweeper' || selected.id === 'lo-siento') && userKey) {
+    if ((selected.id === 'minesweeper' || selected.id === 'lo-siento' || selected.id === 'larves-block-party') && userKey) {
       const sep = selected.url.includes('?') ? '&' : '?';
       const encodedId = encodeURIComponent(userKey);
       const base = `${selected.url}${sep}x-user-id=${encodedId}`;

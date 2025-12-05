@@ -51,6 +51,7 @@ jobs:
               VITE_GOOGLE_CLIENT_ID=${{ vars.VITE_GOOGLE_CLIENT_ID }}
               VITE_MINESWEEPER_URL=${{ vars.VITE_MINESWEEPER_URL }}
               VITE_LOSIENTO_URL=${{ vars.VITE_LOSIENTO_URL }}
+              VITE_LARVES_BLOCK_PARTY_URL=${{ vars.VITE_LARVES_BLOCK_PARTY_URL }}
               VITE_LOGIN_API_BASE_URL=${{ vars.VITE_LOGIN_API_BASE_URL }}
               VITE_CHAT_API_BASE_URL=${{ vars.VITE_CHAT_API_BASE_URL }}
     steps:
