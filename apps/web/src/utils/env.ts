@@ -3,7 +3,6 @@ const chatApiBaseUrl = import.meta.env.VITE_CHAT_API_BASE_URL ?? '/chat-api';
 const googleClientId = (import.meta.env.VITE_GOOGLE_CLIENT_ID ?? '').trim();
 const minesweeperUrl = import.meta.env.VITE_MINESWEEPER_URL ?? '';
 const losientoUrl = import.meta.env.VITE_LOSIENTO_URL || '/placeholders/lo-siento.html';
-const larvesBlockPartyUrl = import.meta.env.VITE_LARVES_BLOCK_PARTY_URL || '/placeholders/larves-block-party.html';
 
 const resolveAuthMode = (): 'frontend-mock' | 'backend' => {
   if (import.meta.env.VITEST) {
@@ -56,5 +55,4 @@ export const env = {
   fakeGoogleCredential,
   minesweeperUrl,
   losientoUrl,
-  larvesBlockPartyUrl,
 };
